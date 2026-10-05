@@ -1,0 +1,12 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "photokeep",
+  "outputfilename": "PhotoKeep",
+  "frontend:install": "npm install --legacy-peer-deps",
+  "frontend:build": "npm run generate",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "PhotoKeep Project"
+  }
+}
