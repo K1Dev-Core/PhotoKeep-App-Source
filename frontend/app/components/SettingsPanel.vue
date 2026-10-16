@@ -15,8 +15,8 @@ const emit = defineEmits<{ pick: [which: 'source' | 'dest']; save: []; clear: []
     <p class="settings-note">เปลี่ยนโฟลเดอร์แล้ว รูปที่เคยสำรองยังดูได้ในแท็บ “ทั้งหมด”</p>
     <div class="settings-actions"><button class="primary" :disabled="!canSave" @click="emit('save')"><span v-if="saving" class="loading-spinner light" aria-hidden="true"></span><ArrowRight v-else :size="16" />{{ saving ? 'กำลังบันทึก…' : 'บันทึกการตั้งค่า' }}</button></div>
     <div class="danger-zone">
-      <h2>โซนอันตราย</h2>
-      <p>ลบรูปทั้งหมดออกจากฐานข้อมูล (ไฟล์ต้นฉบับไม่ถูกลบ)</p>
+      <h2>Dev</h2>
+      <p>Clear DB</p>
       <button class="danger" :class="{ armed: clearArmed }" :disabled="clearing" @click="emit('clear')"><span v-if="clearing" class="loading-spinner light" aria-hidden="true"></span><Trash2 v-else :size="16" />{{ clearing ? 'กำลังล้าง…' : clearArmed ? 'กดอีกครั้งเพื่อยืนยัน' : 'ล้างข้อมูลทั้งหมด' }}</button>
     </div>
   </section>
