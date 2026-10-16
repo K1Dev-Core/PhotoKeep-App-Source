@@ -14,6 +14,7 @@ export type Photo = {
 
 export type TagItem = { name: string; count: number }
 export type BackupResult = { added: number; skipped: number; failed: number; errors: string[]; durationMs: number }
+export type RefreshResult = { total: number; new: number; known: number; failed: number; errors: string[] }
 export type BackupProgress = {
   stage: 'scanning' | 'copying' | 'done' | 'error'
   total: number

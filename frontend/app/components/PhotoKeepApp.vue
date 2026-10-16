@@ -9,7 +9,7 @@ import LoadingState from './LoadingState.vue'
 import PhotoDetailDialog from './PhotoDetailDialog.vue'
 import SettingsPanel from './SettingsPanel.vue'
 import SetupDialog from './SetupDialog.vue'
-import type { AppState, BackupProgress, BackupResult, Photo, TagItem, View } from '../types/photo'
+import type { AppState, BackupProgress, BackupResult, Photo, RefreshResult, TagItem, View } from '../types/photo'
 import '../assets/css/main.css'
 import '../assets/css/theme.css'
 
@@ -142,9 +142,23 @@ async function clearDatabase() {
   const cleared = await run<AppState>(() => api().ClearDatabase(), 'clear', 'ล้างข้อมูลทั้งหมดแล้ว')
   if (cleared) { Object.assign(state, cleared); await search() }
 }
+async function refreshLibrary() {
+  busy.value = true; busyAction.value = 'backup'; dismissToast()
+  try {
+    const result = await api().Refresh() as RefreshResult
+    if (result.failed) showToast('error', `รีเฟรชเสร็จ แต่มี ${result.failed} ไฟล์ไม่สำเร็จ`)
+    else if (result.new > 0) showToast('success', `พบรูปใหม่ ${result.new} รูป กดสำรองเพื่อคัดลอก`)
+    else showToast('success', 'คลังภาพเป็นปัจจุบันแล้ว ไม่มีรูปใหม่')
+    query.value = ''; activeTag.value = ''; scope.value = 'current'
+    await refresh()
+  } catch (e: any) {
+    showToast('error', String(e?.message || e))
+  } finally { busy.value = false; busyAction.value = null }
+}
 async function backup(mode: 'backup' | 'refresh' = 'backup') {
   if (!configured.value) { setupOpen.value = true; return }
   backupMode.value = mode
+  if (mode === 'refresh') return refreshLibrary()
   backupDialogOpen.value = mode === 'backup'; backupDialogError.value = ''
   busy.value = true; busyAction.value = 'backup'; dismissToast()
   backupProgress.value = { stage: 'scanning', total: 0, completed: 0, added: 0, skipped: 0, failed: 0, currentFile: '' }
@@ -165,16 +179,11 @@ async function backup(mode: 'backup' | 'refresh' = 'backup') {
     backupDialogError.value = result.errors?.join(' · ') || ''
     query.value = ''; activeTag.value = ''; scope.value = 'current'
     await refresh()
-    if (mode === 'refresh') {
-      const message = result.failed ? `รีเฟรชเสร็จ แต่มี ${result.failed} ไฟล์ไม่สำเร็จ` : result.added ? `เพิ่มรูปใหม่ ${result.added} รูปแล้ว` : 'คลังภาพเป็นปัจจุบันแล้ว ไม่มีรูปใหม่'
-      showToast(result.failed ? 'error' : 'success', message)
-    }
   } catch (e: any) {
     completed = true
     backupElapsedMs.value = Math.round(performance.now() - started)
     backupDialogError.value = String(e?.message || e)
     backupProgress.value = { ...backupProgress.value, stage: 'error', currentFile: '' }
-    if (mode === 'refresh') showToast('error', backupDialogError.value)
   }
   finally { stopProgress?.(); clearInterval(clock); busy.value = false; busyAction.value = null }
 }
