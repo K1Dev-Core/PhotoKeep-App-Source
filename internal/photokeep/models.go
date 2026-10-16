@@ -35,6 +35,8 @@ type Photo struct {
 	BackedUpAt   time.Time `json:"backedUpAt"`
 }
 
+func (Photo) TableName() string { return "photos" }
+
 type State struct {
 	Source string     `json:"source"`
 	Dest   string     `json:"dest"`
