@@ -21,7 +21,9 @@ const thumbnailFailures = reactive<Record<number, boolean>>({})
 const selected = ref<Photo | null>(null), fullImage = ref('')
 const view = ref<View>('gallery')
 const setupOpen = ref(false), setupDismissed = ref(false)
-const busy = ref(false), busyAction = ref<'pick' | 'settings' | 'backup' | 'photo' | null>(null)
+const busy = ref(false), busyAction = ref<'pick' | 'settings' | 'backup' | 'photo' | 'clear' | null>(null)
+const clearArmed = ref(false)
+let clearTimer: ReturnType<typeof setTimeout> | undefined
 const backupMode = ref<'backup' | 'refresh'>('backup')
 const initializing = ref(true), searching = ref(false), previewLoading = ref(false), previewFailed = ref(false)
 const hasBridge = ref(true)
@@ -127,6 +129,19 @@ async function saveSettings() {
   const saved = await run<AppState>(() => api().SaveSettings(source.value, dest.value), 'settings', 'บันทึกโฟลเดอร์แล้ว')
   if (saved) { Object.assign(state, saved); scope.value = 'current'; query.value = ''; activeTag.value = ''; setupOpen.value = false; view.value = 'gallery'; await search() }
 }
+async function clearDatabase() {
+  if (!clearArmed.value) {
+    clearArmed.value = true
+    showToast('error', 'กดปุ่มถังขยะอีกครั้งเพื่อยืนยันล้างข้อมูลทั้งหมด')
+    clearTimeout(clearTimer)
+    clearTimer = setTimeout(() => { clearArmed.value = false }, 5000)
+    return
+  }
+  clearTimeout(clearTimer)
+  clearArmed.value = false
+  const cleared = await run<AppState>(() => api().ClearDatabase(), 'clear', 'ล้างข้อมูลทั้งหมดแล้ว')
+  if (cleared) { Object.assign(state, cleared); await search() }
+}
 async function backup(mode: 'backup' | 'refresh' = 'backup') {
   if (!configured.value) { setupOpen.value = true; return }
   backupMode.value = mode
@@ -203,7 +218,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); clea
       <div class="main-body" :class="{ 'main-body-settings': view === 'settings' && !initializing }">
         <div v-if="!hasBridge" class="message error" role="alert"><AlertCircle :size="18" />เปิดด้วยแอป PhotoKeep เพื่อใช้งานไฟล์ในเครื่อง</div>
         <LoadingState v-if="initializing" />
-        <SettingsPanel v-else-if="view === 'settings'" v-model:source="source" v-model:dest="dest" :can-save="canSave" :saving="busyAction === 'settings'" @pick="pick" @save="saveSettings" />
+        <SettingsPanel v-else-if="view === 'settings'" v-model:source="source" v-model:dest="dest" :can-save="canSave" :saving="busyAction === 'settings'" :clear-armed="clearArmed" :clearing="busyAction === 'clear'" @pick="pick" @save="saveSettings" @clear="clearDatabase" />
         <GalleryPanel v-else v-model:query="query" v-model:active-tag="activeTag" v-model:scope="scope" :configured="configured" :photos="scopedPhotos" :all-total="allPhotos.length" :current-total="currentTotal" :tags="tags" :thumbnails="thumbnails" :thumbnail-failures="thumbnailFailures" :searching="searching" :busy="busy || initializing || !hasBridge" :backup-mode="busyAction === 'backup' ? backupMode : null" @open-setup="setupOpen = true" @backup="backup" @open-photo="openPhoto" />
       </div>
     </main>

@@ -40,6 +40,16 @@ func (a *Service) Close() {
 	}
 }
 
+func (a *Service) ClearDatabase() (State, error) {
+	if err := a.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&Photo{}).Error; err != nil {
+		return State{}, err
+	}
+	if err := a.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&FileRecord{}).Error; err != nil {
+		return State{}, err
+	}
+	return a.GetState()
+}
+
 func (a *Service) GetState() (State, error) {
 	var s State
 	var setting Setting
