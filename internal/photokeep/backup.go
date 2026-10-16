@@ -37,7 +37,7 @@ func (a *Service) Backup(onProgress func(BackupProgress)) (BackupResult, error) 
 		return BackupResult{}, errors.New("ไม่พบโฟลเดอร์ต้นทาง กรุณาเชื่อมต่ออุปกรณ์")
 	}
 	result := BackupResult{Errors: []string{}}
-	root := filepath.Join(state.Dest, "PhotoKeep", filepath.Base(state.Source))
+	root := state.Dest
 	type backupFile struct {
 		path string
 		rel  string
@@ -91,6 +91,57 @@ func (a *Service) Backup(onProgress func(BackupProgress)) (BackupResult, error) 
 	}
 	result.DurationMS = time.Since(start).Milliseconds()
 	emit("done", "", len(files))
+	return result, nil
+}
+
+func (a *Service) Refresh() (RefreshResult, error) {
+	state, err := a.GetState()
+	if err != nil {
+		return RefreshResult{}, err
+	}
+	if state.Source == "" || state.Dest == "" {
+		return RefreshResult{}, errors.New("ตั้งค่าโฟลเดอร์ก่อนรีเฟรช")
+	}
+	if nested(state.Source, state.Dest) || nested(state.Dest, state.Source) {
+		return RefreshResult{}, errors.New("โฟลเดอร์ต้นทางกับปลายทางซ้อนกัน")
+	}
+	if info, e := os.Stat(state.Source); e != nil || !info.IsDir() {
+		return RefreshResult{}, errors.New("ไม่พบโฟลเดอร์ต้นทาง กรุณาเชื่อมต่ออุปกรณ์")
+	}
+	result := RefreshResult{Errors: []string{}}
+	err = filepath.WalkDir(state.Source, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			result.Failed++
+			return nil
+		}
+		if entry.IsDir() || !entry.Type().IsRegular() || !imageExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
+			return nil
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			result.Failed++
+			return nil
+		}
+		result.Total++
+		var existing Photo
+		known := false
+		if err := a.db.Where("source_path = ? AND size = ?", path, info.Size()).Order("id desc").First(&existing).Error; err == nil {
+			if _, err := os.Stat(existing.BackupPath); err == nil {
+				if currentHash, err := fileSHA256(path); err == nil && currentHash == existing.SHA256 {
+					known = true
+				}
+			}
+		}
+		if known {
+			result.Known++
+		} else {
+			result.New++
+		}
+		return nil
+	})
+	if err != nil {
+		return result, err
+	}
 	return result, nil
 }
 

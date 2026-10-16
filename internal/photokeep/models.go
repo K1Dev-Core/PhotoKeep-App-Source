@@ -52,6 +52,13 @@ type BackupResult struct {
 	Errors     []string `json:"errors"`
 	DurationMS int64    `json:"durationMs"`
 }
+type RefreshResult struct {
+	Total  int      `json:"total"`
+	New    int      `json:"new"`
+	Known  int      `json:"known"`
+	Failed int      `json:"failed"`
+	Errors []string `json:"errors"`
+}
 type BackupProgress struct {
 	Stage       string `json:"stage"`
 	Total       int    `json:"total"`

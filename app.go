@@ -34,6 +34,10 @@ func (a *App) SaveSettings(source, dest string) (photokeep.State, error) {
 	return a.service.SaveSettings(source, dest)
 }
 
+func (a *App) Refresh() (photokeep.RefreshResult, error) {
+	return a.service.Refresh()
+}
+
 func (a *App) ClearDatabase() (photokeep.State, error) {
 	return a.service.ClearDatabase()
 }
