@@ -16,7 +16,7 @@ import '../assets/css/theme.css'
 const state = reactive<AppState>({ source: '', dest: '', total: 0, tags: [] })
 const source = ref(''), dest = ref(''), query = ref(''), activeTag = ref('')
 const photos = ref<Photo[]>([]), thumbnails = reactive<Record<number, string>>({})
-const allPhotos = ref<Photo[]>([]), scope = ref<'current' | 'all'>('current')
+const allPhotos = ref<Photo[]>([])
 const thumbnailFailures = reactive<Record<number, boolean>>({})
 const selected = ref<Photo | null>(null), fullImage = ref('')
 const view = ref<View>('gallery')
@@ -44,19 +44,9 @@ const backupElapsedMs = ref(0)
 const backupDialogOpen = ref(false), backupDialogError = ref('')
 const configured = computed(() => !!state.source && !!state.dest)
 const canSave = computed(() => !!source.value.trim() && !!dest.value.trim() && !busy.value && hasBridge.value)
-const normalizePath = (path: string) => path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
-const currentPhoto = (photo: Photo) => {
-  if (!state.source || !state.dest) return false
-  const sourcePath = normalizePath(state.source)
-  const destPath = normalizePath(state.dest)
-  const sourceName = sourcePath.split('/').pop()
-  return normalizePath(photo.sourcePath).startsWith(`${sourcePath}/`) && normalizePath(photo.backupPath).startsWith(`${destPath}/photokeep/${sourceName}/`)
-}
-const scopedPhotos = computed(() => scope.value === 'current' ? photos.value.filter(currentPhoto) : photos.value)
-const currentTotal = computed(() => allPhotos.value.filter(currentPhoto).length)
 const tags = computed<TagItem[]>(() => {
   const counts = new Map<string, number>()
-  for (const photo of scope.value === 'current' ? allPhotos.value.filter(currentPhoto) : allPhotos.value) {
+  for (const photo of allPhotos.value) {
     for (const tag of photo.tags.split(',')) {
       const value = tag.trim()
       if (value) counts.set(value, (counts.get(value) || 0) + 1)
@@ -100,7 +90,7 @@ async function search() {
     if (seq !== searchSeq) return
     photos.value = result.photos || []
     if (!query.value && !activeTag.value) allPhotos.value = photos.value
-    const pending = scopedPhotos.value.filter(photo => !thumbnails[photo.id] && !thumbnailFailures[photo.id])
+    const pending = photos.value.filter(photo => !thumbnails[photo.id] && !thumbnailFailures[photo.id])
     async function loadNext() {
       while (pending.length) {
         const photo = pending.shift()!
@@ -119,7 +109,6 @@ async function search() {
 let timer: ReturnType<typeof setTimeout>
 watch(query, () => { clearTimeout(timer); searchSeq++; searching.value = true; timer = setTimeout(search, 250) })
 watch(activeTag, search)
-watch(scope, () => { if (activeTag.value) activeTag.value = ''; else void search() })
 
 async function pick(which: 'source' | 'dest') {
   const path = await run<string>(() => api().PickDirectory(), 'pick')
@@ -127,7 +116,7 @@ async function pick(which: 'source' | 'dest') {
 }
 async function saveSettings() {
   const saved = await run<AppState>(() => api().SaveSettings(source.value, dest.value), 'settings', 'บันทึกโฟลเดอร์แล้ว')
-  if (saved) { Object.assign(state, saved); scope.value = 'current'; query.value = ''; activeTag.value = ''; setupOpen.value = false; view.value = 'gallery'; await search() }
+  if (saved) { Object.assign(state, saved); query.value = ''; activeTag.value = ''; setupOpen.value = false; view.value = 'gallery'; await search() }
 }
 async function clearDatabase() {
   if (!clearArmed.value) {
@@ -149,7 +138,7 @@ async function refreshLibrary() {
     if (result.failed) showToast('error', `รีเฟรชเสร็จ แต่มี ${result.failed} ไฟล์ไม่สำเร็จ`)
     else if (result.new > 0) showToast('success', `พบรูปใหม่ ${result.new} รูป กดสำรองเพื่อคัดลอก`)
     else showToast('success', 'คลังภาพเป็นปัจจุบันแล้ว ไม่มีรูปใหม่')
-    query.value = ''; activeTag.value = ''; scope.value = 'current'
+    query.value = ''; activeTag.value = ''
     await refresh()
   } catch (e: any) {
     showToast('error', String(e?.message || e))
@@ -177,7 +166,7 @@ async function backup(mode: 'backup' | 'refresh' = 'backup') {
     const total = Math.max(backupProgress.value.total, result.added + result.skipped + result.failed)
     backupProgress.value = { stage: 'done', total, completed: total, added: result.added, skipped: result.skipped, failed: result.failed, currentFile: '' }
     backupDialogError.value = result.errors?.join(' · ') || ''
-    query.value = ''; activeTag.value = ''; scope.value = 'current'
+    query.value = ''; activeTag.value = ''
     await refresh()
   } catch (e: any) {
     completed = true
@@ -228,7 +217,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); clea
         <div v-if="!hasBridge" class="message error" role="alert"><AlertCircle :size="18" />เปิดด้วยแอป PhotoKeep เพื่อใช้งานไฟล์ในเครื่อง</div>
         <LoadingState v-if="initializing" />
         <SettingsPanel v-else-if="view === 'settings'" v-model:source="source" v-model:dest="dest" :can-save="canSave" :saving="busyAction === 'settings'" :clear-armed="clearArmed" :clearing="busyAction === 'clear'" @pick="pick" @save="saveSettings" @clear="clearDatabase" />
-        <GalleryPanel v-else v-model:query="query" v-model:active-tag="activeTag" v-model:scope="scope" :configured="configured" :photos="scopedPhotos" :all-total="allPhotos.length" :current-total="currentTotal" :tags="tags" :thumbnails="thumbnails" :thumbnail-failures="thumbnailFailures" :searching="searching" :busy="busy || initializing || !hasBridge" :backup-mode="busyAction === 'backup' ? backupMode : null" @open-setup="setupOpen = true" @backup="backup" @open-photo="openPhoto" />
+        <GalleryPanel v-else v-model:query="query" v-model:active-tag="activeTag" :configured="configured" :photos="photos" :total="allPhotos.length" :tags="tags" :thumbnails="thumbnails" :thumbnail-failures="thumbnailFailures" :searching="searching" :busy="busy || initializing || !hasBridge" :backup-mode="busyAction === 'backup' ? backupMode : null" @open-setup="setupOpen = true" @backup="backup" @open-photo="openPhoto" />
       </div>
     </main>
     <SetupDialog v-if="setupOpen && !initializing" v-model:source="source" v-model:dest="dest" :can-save="canSave" :saving="busyAction === 'settings'" @pick="pick" @close="closeSetup" @save="saveSettings" />

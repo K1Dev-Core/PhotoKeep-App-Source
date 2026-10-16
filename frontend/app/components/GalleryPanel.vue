@@ -2,10 +2,9 @@
 import { ArrowRight, HardDriveDownload, Image as ImageIcon, Images, RefreshCw, Search, Tag, X } from '@lucide/vue'
 import type { Photo, TagItem } from '../types/photo'
 
-const props = defineProps<{ configured: boolean; photos: Photo[]; allTotal: number; currentTotal: number; tags: TagItem[]; thumbnails: Record<number, string>; thumbnailFailures: Record<number, boolean>; searching: boolean; busy: boolean; backupMode: 'backup' | 'refresh' | null }>()
+const props = defineProps<{ configured: boolean; photos: Photo[]; total: number; tags: TagItem[]; thumbnails: Record<number, string>; thumbnailFailures: Record<number, boolean>; searching: boolean; busy: boolean; backupMode: 'backup' | 'refresh' | null }>()
 const query = defineModel<string>('query', { required: true })
 const activeTag = defineModel<string>('activeTag', { required: true })
-const scope = defineModel<'current' | 'all'>('scope', { required: true })
 const emit = defineEmits<{ openSetup: []; backup: [mode: 'backup' | 'refresh']; openPhoto: [photo: Photo] }>()
 const formatDate = (value: string) => value ? new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium' }).format(new Date(value)) : '—'
 function chooseTag(tag: string) { activeTag.value = activeTag.value === tag ? '' : tag }
@@ -32,11 +31,7 @@ function chooseTag(tag: string) { activeTag.value = activeTag.value === tag ? ''
       <section class="library-section" aria-labelledby="library-title">
         <div class="library-heading">
           <div><span class="section-label">คลังภาพ</span><h2 id="library-title">รูปภาพของคุณ</h2></div>
-          <span class="library-count">{{ scope === 'current' ? currentTotal : allTotal }} รูป</span>
-        </div>
-        <div class="library-scope" role="group" aria-label="เลือกชุดรูปภาพ">
-          <button type="button" :class="{ active: scope === 'current' }" :aria-pressed="scope === 'current'" @click="scope = 'current'">โฟลเดอร์นี้</button>
-          <button type="button" :class="{ active: scope === 'all' }" :aria-pressed="scope === 'all'" @click="scope = 'all'">ทั้งหมด</button>
+          <span class="library-count">{{ total }} รูป</span>
         </div>
         <div class="library-tools">
           <div class="search-field">
@@ -51,7 +46,7 @@ function chooseTag(tag: string) { activeTag.value = activeTag.value === tag ? ''
           </div>
         </div>
         <div class="results-heading">
-          <span>{{ query || activeTag ? 'ผลการค้นหา' : scope === 'current' ? 'รูปในโฟลเดอร์นี้' : 'รูปทั้งหมด' }}</span>
+          <span>{{ query || activeTag ? 'ผลการค้นหา' : 'รูปทั้งหมด' }}</span>
           <span v-if="searching" class="search-status" role="status"><span class="loading-spinner" aria-hidden="true"></span>กำลังค้นหา…</span>
           <span v-else>{{ photos.length }} รูป</span>
         </div>
@@ -71,9 +66,8 @@ function chooseTag(tag: string) { activeTag.value = activeTag.value === tag ? ''
         </div>
         <div v-else class="empty">
           <ImageIcon :size="29" :stroke-width="1.5" />
-          <h3>{{ query || activeTag ? 'ไม่พบรูปภาพ' : scope === 'current' ? 'ยังไม่มีรูปในโฟลเดอร์นี้' : 'ยังไม่มีรูปภาพ' }}</h3>
-          <p>{{ query || activeTag ? 'ลองเปลี่ยนคำค้นหาหรือแท็ก' : scope === 'current' ? 'กด “สำรองรูป” ด้านบนเพื่อเพิ่มรูปจากโฟลเดอร์นี้' : 'กด “สำรองรูป” เพื่อเพิ่มรูปภาพ' }}</p>
-          <button v-if="scope === 'current' && allTotal && !query && !activeTag" type="button" class="quiet-button empty-switch" @click="scope = 'all'">ดูรูปจากโฟลเดอร์อื่น <ArrowRight :size="16" /></button>
+          <h3>{{ query || activeTag ? 'ไม่พบรูปภาพ' : 'ยังไม่มีรูปภาพ' }}</h3>
+          <p>{{ query || activeTag ? 'ลองเปลี่ยนคำค้นหาหรือแท็ก' : 'กด “สำรองรูป” เพื่อเพิ่มรูปภาพ' }}</p>
         </div>
       </section>
     </template>
