@@ -3,6 +3,11 @@ frontend/.nuxt/
 frontend/.output/
 frontend/wailsjs/
 build/bin/
+dist/
+build/darwin/Info.dev.plist
 frontend/package.json.md5
 *.db
+.env
+.env.*
+!.env.example
 .DS_Store

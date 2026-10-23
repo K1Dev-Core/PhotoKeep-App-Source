@@ -217,7 +217,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .loading-spinner { width: 17px; height: 17px; display: inline-block; flex: none; border: 2px solid #bfd5c4; border-top-color: var(--green); animation: loading-turn .8s linear infinite; }
 .loading-spinner.light { border-color: #ffffff80; border-top-color: #fff; }
-.loading-pulse { background: linear-gradient(105deg, #e8eee8 8%, #f4f8f3 43%, #e8eee8 78%); background-size: 230% 100%; animation: loading-sweep 1.6s ease-in-out infinite; }
+.loading-pulse { background: linear-gradient(105deg, #e8eee8 8%, #f4f8f3 43%, #e8eee8 78%); background-size: 230% 100%; animation: loading-sweep 2s ease-in-out infinite; }
 .loading-state { width: 100%; }
 .loading-state-heading { display: grid; gap: 13px; margin: 7px 0 35px; }
 .loading-line { height: 13px; }
@@ -235,6 +235,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .search-status { display: inline-flex; align-items: center; gap: 8px; color: var(--green) !important; }
 .search-status .loading-spinner { width: 13px; height: 13px; border-width: 2px; }
 .backup-overlay { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 20px; background: #13271bbb; backdrop-filter: blur(7px); }
+.backup-overlay.backup-progress-floating { inset: 74px 22px auto auto; z-index: 35; display: block; width: min(390px, calc(100vw - 32px)); max-height: calc(100dvh - 92px); overflow: auto; padding: 0; background: transparent; backdrop-filter: none; pointer-events: none; }
+.backup-progress-floating .backup-dialog { width: 100%; max-height: none; overflow: visible; padding: 16px 17px 14px; box-shadow: 0 8px 28px #17231d24; pointer-events: auto; }
+.backup-progress-floating .backup-route, .backup-progress-floating .backup-steps, .backup-progress-floating .backup-ring-wrap, .backup-progress-floating .backup-dialog-description { display: none; }
+.backup-inline-progress { display: block; width: 100%; height: 5px; margin-top: 14px; accent-color: var(--green); }
+.backup-progress-floating .backup-stats { margin-top: 13px; }
+.backup-progress-floating .backup-current { margin-top: 12px; }
+.backup-progress-floating .backup-dialog-footer { margin-top: 12px; padding-top: 10px; }
+.backup-progress-floating .backup-finish-button { width: 100%; min-height: 36px; margin-top: 12px; }
 .backup-dialog { width: min(430px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 28px 29px 22px; border: 1px solid #aac9b1; border-top: 5px solid var(--green); background: #fff; box-shadow: 0 25px 70px #0c211b42; color: #1f2c24; }
 .backup-dialog-error { border-top-color: #b75b46; }
 .backup-dialog-header { display: flex; align-items: center; gap: 13px; }
@@ -266,6 +274,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
 .backup-finish-button { width: 100%; min-height: 44px; margin-top: 18px; }
 .preview-status { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: #718a77; font-size: 12px; }
 .backup-button:disabled { opacity: .8; }
+.image-ai-confirm-dialog { width: min(440px, 100%); padding: 28px; border: 1px solid #b8d1bd; border-top: 5px solid var(--green); background: #fff; box-shadow: 0 25px 70px #0c211b42; color: #1f2c24; }
+.image-ai-confirm-mark { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 16px; background: var(--green-soft); color: var(--green); }
+.image-ai-confirm-kicker { color: #6c8a73; font-size: 10px; font-weight: 750; letter-spacing: .12em; }
+.image-ai-confirm-dialog h2 { margin: 5px 0 0; color: #1f3d2a; font-size: 21px; line-height: 1.3; }
+.image-ai-confirm-dialog p { margin: 12px 0 0; color: #647568; font-size: 13px; line-height: 1.6; }
+.image-ai-confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; }
+.image-ai-confirm-actions button { min-height: 43px; }
+.image-ai-confirm-actions .primary { display: inline-flex; align-items: center; gap: 8px; }
+.load-more-button { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px auto 0; padding: 0 20px; }
 @keyframes loading-turn { to { transform: rotate(360deg); } }
 @keyframes loading-sweep { to { background-position-x: -230%; } }
 @keyframes backup-spin { to { transform: rotate(360deg); } }
@@ -275,6 +292,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px
   .loading-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
   .loading-card:nth-child(n+3) { display: none; }
   .backup-dialog { padding: 23px 20px 19px; }
+  .image-ai-confirm-dialog { padding: 22px 20px; }
+  .image-ai-confirm-actions button { flex: 1; }
+
+
 }
 @media (prefers-reduced-motion: reduce) {
   .loading-spinner, .loading-pulse, .backup-ring-scanning { animation: none; }

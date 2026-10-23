@@ -9,6 +9,10 @@ import (
 )
 
 func (a *Service) SaveSettings(source, dest string) (State, error) {
+	return a.SaveBackupSettings(source, dest, true)
+}
+
+func (a *Service) SaveBackupSettings(source, dest string, keepOriginal bool) (State, error) {
 	source, dest = strings.TrimSpace(source), strings.TrimSpace(dest)
 	if source == "" || dest == "" {
 		return State{}, errors.New("กรุณาเลือกโฟลเดอร์ต้นทางและปลายทาง")
@@ -40,7 +44,7 @@ func (a *Service) SaveSettings(source, dest string) (State, error) {
 	if nested(source, dest) || nested(dest, source) {
 		return State{}, errors.New("ต้นทางและปลายทางต้องเป็นคนละโฟลเดอร์และไม่ซ้อนกัน")
 	}
-	if err := a.db.Create(&Setting{Source: source, Dest: dest}).Error; err != nil {
+	if err := a.db.Create(&Setting{Source: source, Dest: dest, KeepOriginal: &keepOriginal}).Error; err != nil {
 		return State{}, err
 	}
 	return a.GetState()

@@ -1,1 +1,0 @@
-import{L as e,t}from"./BZ7M2ODi.js";var n={};function r(t,n){return e(t.$slots,`default`)}var i=t(n,[[`render`,r]]);export{i as default};

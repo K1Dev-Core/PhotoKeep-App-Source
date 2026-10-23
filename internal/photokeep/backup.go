@@ -15,8 +15,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/gen2brain/jpegn"
 )
 
 var imageExtensions = map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true, ".bmp": true, ".tif": true, ".tiff": true}
@@ -60,6 +64,12 @@ func (a *Service) Backup(onProgress func(BackupProgress)) (BackupResult, error) 
 			result.Errors = append(result.Errors, walkErr.Error())
 			return nil
 		}
+		if path != state.Source && strings.HasPrefix(entry.Name(), ".") {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 		if entry.IsDir() || !entry.Type().IsRegular() || !imageExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
 			return nil
 		}
@@ -79,15 +89,52 @@ func (a *Service) Backup(onProgress func(BackupProgress)) (BackupResult, error) 
 		return result, err
 	}
 	emit("copying", "", 0)
-	for index, file := range files {
-		emit("copying", file.rel, index)
-		if e := a.backupOne(file.path, filepath.Join(root, file.rel), file.rel, &result); e != nil {
+	workers := minInt(4, maxInt(1, runtime.GOMAXPROCS(0)))
+	type backupJob struct {
+		index int
+		file  backupFile
+	}
+	type backupOutcome struct {
+		index  int
+		file   backupFile
+		result BackupResult
+		err    error
+	}
+	jobs := make(chan backupJob)
+	outcomes := make(chan backupOutcome, workers)
+	var wg sync.WaitGroup
+	for range workers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for job := range jobs {
+				fileResult := BackupResult{}
+				err := a.backupOne(job.file.path, filepath.Join(root, job.file.rel), job.file.rel, state.KeepOriginal, &fileResult)
+				outcomes <- backupOutcome{index: job.index, file: job.file, result: fileResult, err: err}
+			}
+		}()
+	}
+	go func() {
+		for index, file := range files {
+			jobs <- backupJob{index: index, file: file}
+		}
+		close(jobs)
+		wg.Wait()
+		close(outcomes)
+	}()
+	completed := 0
+	for outcome := range outcomes {
+		completed++
+		result.Added += outcome.result.Added
+		result.Skipped += outcome.result.Skipped
+		result.Failed += outcome.result.Failed
+		if outcome.err != nil {
 			result.Failed++
 			if len(result.Errors) < 8 {
-				result.Errors = append(result.Errors, file.rel+": "+e.Error())
+				result.Errors = append(result.Errors, outcome.file.rel+": "+outcome.err.Error())
 			}
 		}
-		emit("copying", file.rel, index+1)
+		emit("copying", outcome.file.rel, completed)
 	}
 	result.DurationMS = time.Since(start).Milliseconds()
 	emit("done", "", len(files))
@@ -112,6 +159,12 @@ func (a *Service) Refresh() (RefreshResult, error) {
 	err = filepath.WalkDir(state.Source, func(path string, entry os.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			result.Failed++
+			return nil
+		}
+		if path != state.Source && strings.HasPrefix(entry.Name(), ".") {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		if entry.IsDir() || !entry.Type().IsRegular() || !imageExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
@@ -145,19 +198,26 @@ func (a *Service) Refresh() (RefreshResult, error) {
 	return result, nil
 }
 
-func (a *Service) backupOne(src, dst, rel string, result *BackupResult) error {
+func (a *Service) backupOne(src, dst, rel string, keepOriginal bool, result *BackupResult) error {
 	info, err := os.Stat(src)
 	if err != nil {
 		return err
 	}
 	var existing Photo
-	if err := a.db.Where("source_path = ? AND size = ?", src, info.Size()).Order("id desc").First(&existing).Error; err == nil {
+	if err := a.db.Where("source_path = ? AND size = ?", src, info.Size()).Order("id desc").Find(&existing).Error; err != nil {
+		return err
+	} else if existing.ID != 0 && filepath.Dir(existing.BackupPath) == filepath.Dir(dst) {
 		if _, err := os.Stat(existing.BackupPath); err == nil {
 			currentHash, err := fileSHA256(src)
 			if err != nil {
 				return err
 			}
 			if currentHash == existing.SHA256 {
+				if !keepOriginal {
+					if err := a.markAndRemoveOriginal(&existing, src); err != nil {
+						return err
+					}
+				}
 				result.Skipped++
 				return nil
 			}
@@ -182,16 +242,27 @@ func (a *Service) backupOne(src, dst, rel string, result *BackupResult) error {
 		return err
 	}
 	defer in.Close()
-	config, _, decodeErr := image.DecodeConfig(in)
+	config, format, decodeErr := image.DecodeConfig(in)
 	if decodeErr != nil {
 		return fmt.Errorf("อ่านรูปภาพไม่ได้: %w", decodeErr)
 	}
 	var colorTags []string
-	if int64(config.Width)*int64(config.Height) <= 20_000_000 {
+	var decodedForThumbnail image.Image
+	if format == "jpeg" {
+		if _, err := in.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+		denom := jpegThumbnailScale(config.Width, config.Height, 256)
+		if decoded, err := jpegn.Decode(in, &jpegn.Options{ScaleDenom: denom, AutoRotate: true}); err == nil {
+			decodedForThumbnail = decoded
+			colorTags = analyzeColors(decoded)
+		}
+	} else if int64(config.Width)*int64(config.Height) <= 20_000_000 {
 		if _, err := in.Seek(0, io.SeekStart); err != nil {
 			return err
 		}
 		if decoded, _, err := image.Decode(in); err == nil {
+			decodedForThumbnail = decoded
 			colorTags = analyzeColors(decoded)
 		}
 	}
@@ -221,19 +292,42 @@ func (a *Service) backupOne(src, dst, rel string, result *BackupResult) error {
 	if err := os.Rename(tmpName, dst); err != nil {
 		return err
 	}
-	photo := Photo{SourcePath: src, BackupPath: dst, Filename: filepath.Base(src), RelativePath: rel, SHA256: hex.EncodeToString(hash.Sum(nil)), Size: n, Width: config.Width, Height: config.Height, TakenAt: info.ModTime(), BackedUpAt: time.Now()}
+	photo := Photo{SourcePath: src, BackupPath: dst, Filename: filepath.Base(src), RelativePath: rel, SHA256: hex.EncodeToString(hash.Sum(nil)), Size: n, Width: config.Width, Height: config.Height, TakenAt: info.ModTime(), BackedUpAt: time.Now(), AIStatus: "pending"}
 	photo.Tags = strings.Join(append(strings.Split(initialTags(photo), ","), colorTags...), ",")
 	photo.Description = fmt.Sprintf("%s • %d × %d พิกเซล", strings.TrimSuffix(photo.Filename, filepath.Ext(photo.Filename)), photo.Width, photo.Height)
-	if err := a.db.Transaction(func(tx *gorm.DB) error {
+	a.backupInsertMu.Lock()
+	err = a.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&photo).Error; err != nil {
 			return err
 		}
 		return tx.Create(&FileRecord{Dest: filepath.Dir(dst), Filename: photo.Filename, Status: "backed_up"}).Error
-	}); err != nil {
+	})
+	a.backupInsertMu.Unlock()
+	if err != nil {
 		_ = os.Remove(dst)
 		return err
 	}
+	a.invalidateTagCloud()
+	if decodedForThumbnail != nil {
+		_, _ = a.encodeThumbnail(photo, decodedForThumbnail)
+	}
+	if !keepOriginal {
+		if err := a.markAndRemoveOriginal(&photo, src); err != nil {
+			return err
+		}
+	}
 	result.Added++
+	return nil
+}
+
+func (a *Service) markAndRemoveOriginal(photo *Photo, src string) error {
+	if err := a.db.Model(photo).Update("moved_original", true).Error; err != nil {
+		return fmt.Errorf("บันทึกสถานะการย้ายภาพไม่ได้: %w", err)
+	}
+	if err := os.Remove(src); err != nil {
+		_ = a.db.Model(photo).Update("moved_original", false).Error
+		return fmt.Errorf("ลบต้นฉบับหลังสำรองไม่สำเร็จ: %w", err)
+	}
 	return nil
 }
 func fileSHA256(path string) (string, error) {
