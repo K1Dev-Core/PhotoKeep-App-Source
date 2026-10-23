@@ -175,7 +175,7 @@ func (a *App) searchPage(query, tag string, offset, limit int) (photokeep.Search
 	if err != nil || !hasEmbeddings {
 		return pageSearchResult(lexical, offset, limit), nil
 	}
-	client, err := photokeep.NewManagedEmbeddingClient(managedAIURL())
+	client, err := photokeep.NewManagedEmbeddingClient(a.managedAIURL())
 	if err != nil {
 		return pageSearchResult(lexical, offset, limit), nil
 	}
@@ -372,7 +372,7 @@ func (a *App) startPhotoEmbeddingIndex() {
 			a.embeddingCancel = nil
 			a.embeddingIndexMu.Unlock()
 		}()
-		client, err := photokeep.NewManagedEmbeddingClient(managedAIURL())
+		client, err := photokeep.NewManagedEmbeddingClient(a.managedAIURL())
 		if err != nil {
 			return
 		}
@@ -489,16 +489,21 @@ func (a *App) FetchOpenVSXThemePackage(namespace, name, version string) (OpenVSX
 
 var managedAIEndpoint string
 
-const localManagedAIEndpoint = "http://127.0.0.1:8081/v1/analyze"
+const defaultManagedAIEndpoint = "https://vision.k1god.com/v1/analyze"
 
-func managedAIURL() string {
+func (a *App) managedAIURL() string {
+	if a != nil && a.service != nil {
+		if value, err := a.service.GetAppSetting("ai_gateway_url"); err == nil && strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
 	if value := strings.TrimSpace(os.Getenv("PHOTOKEEP_AI_GATEWAY_URL")); value != "" {
 		return value
 	}
 	if value := strings.TrimSpace(managedAIEndpoint); value != "" {
 		return value
 	}
-	return localManagedAIEndpoint
+	return defaultManagedAIEndpoint
 }
 
 type ImageAISettings struct {
@@ -513,14 +518,14 @@ type ImageAISettings struct {
 
 func (a *App) GetImageAISettings() (ImageAISettings, error) {
 	concurrency := 0
-	client, err := photokeep.NewManagedImageAIClient(managedAIURL())
+	client, err := photokeep.NewManagedImageAIClient(a.managedAIURL())
 	if err == nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		concurrency, _ = client.Concurrency(ctx)
 		cancel()
 	}
 	return ImageAISettings{
-		Endpoint:       managedAIURL(),
+		Endpoint:       a.managedAIURL(),
 		SearchEndpoint: "ค้นหาในเครื่อง · SQLite FTS5",
 		Provider:       "managed",
 		Model:          "กำหนดจาก Gateway",
@@ -529,13 +534,27 @@ func (a *App) GetImageAISettings() (ImageAISettings, error) {
 	}, nil
 }
 
+func (a *App) SaveImageAIGatewayURL(endpoint string) (ImageAISettings, error) {
+	endpoint = strings.TrimSpace(endpoint)
+	if endpoint == "" {
+		endpoint = defaultManagedAIEndpoint
+	}
+	if _, err := photokeep.NewManagedImageAIClient(endpoint); err != nil {
+		return ImageAISettings{}, err
+	}
+	if err := a.service.SaveAppSetting("ai_gateway_url", endpoint); err != nil {
+		return ImageAISettings{}, err
+	}
+	return a.GetImageAISettings()
+}
+
 func (a *App) StartImageAIAnalysis(photoIDs []uint) (photokeep.ImageAIAnalysisJob, error) {
 	a.imageAIStartMu.Lock()
 	defer a.imageAIStartMu.Unlock()
 	if a.ctx == nil {
 		return photokeep.ImageAIAnalysisJob{}, errors.New("การวิเคราะห์ AI ใช้ได้ในแอปเดสก์ท็อป")
 	}
-	client, err := photokeep.NewManagedImageAIClient(managedAIURL())
+	client, err := photokeep.NewManagedImageAIClient(a.managedAIURL())
 	if err != nil {
 		a.setImageAIQueueError(err.Error())
 		return photokeep.ImageAIAnalysisJob{}, err
@@ -741,7 +760,7 @@ func (a *App) runImageAIAnalysisJob(ctx context.Context, jobID uint, inputs []ph
 }
 
 func (a *App) runManagedImageAIAnalysisJob(ctx context.Context, jobID uint, inputs []photokeep.ImageAIInput, resumeAfter *bool, resumeDelay *time.Duration) {
-	client, err := photokeep.NewManagedImageAIClient(managedAIURL())
+	client, err := photokeep.NewManagedImageAIClient(a.managedAIURL())
 	if err != nil {
 		_ = a.service.FailImageAIAnalysisJob(jobID, err.Error())
 		return

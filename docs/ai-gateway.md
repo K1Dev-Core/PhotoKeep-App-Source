@@ -9,10 +9,10 @@ The gateway holds provider credentials; the desktop app does not
 receive or store those provider keys. `GET /health` reports readiness. Search
 continues to use the app's local SQLite index of saved captions and tags.
 
-The desktop defaults to the gateway API at
-`http://127.0.0.1:8081/v1/analyze`; its provider is selected on the gateway.
-For local
-development, `./run.sh` starts it when needed using `.env.gateway`; see
+The desktop defaults to `https://vision.k1god.com/v1/analyze`; its provider is
+selected on the gateway. For local development, set
+`PHOTOKEEP_AI_GATEWAY_URL=http://127.0.0.1:8081/v1/analyze`; `./run.sh` starts
+the local gateway when needed using `.env.gateway`. See
 [xKiro gateway](xkiro-experiment.md) for setup.
 
 ## Run locally

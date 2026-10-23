@@ -2,6 +2,10 @@
 
 แอปเดสก์ท็อปสำหรับสำรองรูปภาพจากแฟลชไดรฟ์ โทรศัพท์ที่เชื่อมต่อเป็นโฟลเดอร์ หรือโฟลเดอร์รูปทั่วไป พัฒนาต่อจากโปรแกรม Go CLI ของ midterm โดยคงแนวคิด `source` / `dest` / `files` / `settings` และเพิ่ม Wails, Nuxt, คลังรูปภาพ, คำอธิบาย และแท็ก
 
+เว็บสรุปสำหรับพรีเซนต์พร้อม flow ระบบและตัวอย่างโค้ดจริง: [docs/presentation.html](docs/presentation.html)
+
+คู่มือเดินโค้ดแยกตามไฟล์ พร้อมไดอะแกรมการทำงานและ code excerpts: [docs/code-tour.html](docs/code-tour.html)
+
 ## ความสามารถตามโจทย์
 
 | เกณฑ์ | ส่วนที่ทำ |
@@ -22,7 +26,7 @@
 - `scripts/`: สคริปต์รันและสร้างชุด gateway; [คู่มือย้ายไปรันอีกเครื่อง](docs/remote-ai-gateway-source.md)
 - `frontend/dist/`, `frontend/.nuxt/`, `frontend/.output/`, `build/` และ `dist/` เป็นไฟล์สร้างอัตโนมัติหรือแพ็กเกจพร้อมใช้ ไม่ใช่ source ที่แก้โดยตรง
 
-แอปใช้ gateway ที่ `127.0.0.1:8081` โดยค่าเริ่มต้น และเปลี่ยนได้ด้วย `PHOTOKEEP_AI_GATEWAY_URL` คีย์ผู้ให้บริการอยู่ฝั่ง gateway เท่านั้น
+แอปใช้ `https://vision.k1god.com/v1/analyze` โดยค่าเริ่มต้น และเปลี่ยนได้ด้วย `PHOTOKEEP_AI_GATEWAY_URL` หากต้องการรัน Gateway ในเครื่อง ให้กำหนด URL เป็น `http://127.0.0.1:8081/v1/analyze` คีย์ผู้ให้บริการอยู่ฝั่ง Gateway เท่านั้น
 
 การตั้งค่าแอปอยู่ใน `.env` (คัดลอกจาก `.env.example`); คีย์ AI สำหรับ gateway อยู่ใน `.env.gateway` (คัดลอกจาก `scripts/ai-gateway.env.example`) และไม่ควรนำขึ้น Git เอกสารโครงการเพิ่มเติมอยู่ใน `docs/project/`.
 

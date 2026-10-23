@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff">
+<title>PhotoKeep — คู่มือเดินโค้ด</title>
+<style>
+:root{color-scheme:light;--ink:#151515;--muted:#606060;--line:#d8d8d8;--soft:#f5f5f5;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:75px}body{margin:0;background:#fff;color:var(--ink);font:15px/1.7 var(--sans)}a{color:#222;text-underline-offset:3px}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;justify-content:space-between;padding:10px clamp(14px,4vw,52px);background:#ffffffed;border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}.brand{font-weight:750;display:flex;gap:10px;align-items:center}.mark{display:grid;place-items:center;background:#111;color:#fff;width:34px;height:34px;border-radius:5px}.actions{display:flex;gap:8px}.btn{border:1px solid #bbb;background:white;padding:7px 11px;border-radius:5px;cursor:pointer;color:#171717}.btn:hover{background:#eee}
+.layout{max-width:1600px;margin:auto;display:grid;grid-template-columns:240px minmax(0,1fr)}aside{position:sticky;top:55px;height:calc(100vh - 55px);overflow:auto;border-right:1px solid var(--line);padding:22px 14px}.aside-title{font-size:11px;font-weight:800;letter-spacing:.12em;color:#777;margin:0 0 10px 8px}.nav{display:grid;gap:3px}.nav a{font-size:13px;text-decoration:none;padding:6px 9px;color:#454545;border-radius:4px}.nav a:hover,.nav a.active{background:#eee;color:#111}
+.content{min-width:0;padding:clamp(18px,4vw,58px)}.hero{padding:clamp(25px,5vw,58px);border:1px solid #ccc;background:#f4f4f4;border-radius:9px}.kicker{font-size:11px;font-weight:800;letter-spacing:.13em;color:#555}.hero h1{font-size:clamp(34px,5vw,60px);line-height:1.06;letter-spacing:-.04em;margin:10px 0}.hero p{max-width:760px;color:#444}.pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}.pill{border:1px solid #ccc;background:white;border-radius:4px;padding:3px 8px;font-size:12px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 50px}.metric{border:1px solid var(--line);background:#fafafa;padding:12px;border-radius:6px}.metric b{font-size:20px;display:block}.metric span{font-size:12px;color:#555}
+.section{margin:0 0 58px;scroll-margin-top:80px}.section-head{display:flex;gap:12px;margin-bottom:17px;align-items:flex-start}.num{font:12px var(--mono);border:1px solid #bbb;border-radius:5px;padding:5px 7px;background:#f3f3f3}.section h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0;letter-spacing:-.025em}.section-head p{margin:5px 0 0;color:#555}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);background:#fafafa;border-radius:7px;padding:15px}.card h3{font-size:15px;margin:0 0 6px}.card p,.card li{font-size:13px;color:#444;margin:0}.card ul{padding-left:18px;margin:7px 0 0}
+.code{border:1px solid #bbb;border-radius:7px;overflow:hidden;background:#fafafa;margin:13px 0}.codehead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 11px;background:#eee;border-bottom:1px solid #ccc;font:11px var(--mono);color:#333}.codehead button{border:1px solid #bbb;border-radius:4px;background:#fff;padding:3px 7px;font:11px var(--sans);cursor:pointer}pre{margin:0;padding:13px;overflow:auto;max-height:360px;white-space:pre;font:12px/1.6 var(--mono);color:#222}.source-note{padding:7px 11px;border-top:1px solid #ddd;color:#555;font-size:11px}
+.flow-select{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.flow-select button{border:1px solid #bbb;border-radius:4px;background:#fff;padding:6px 10px;cursor:pointer}.flow-select button.active{background:#171717;color:#fff;border-color:#171717}.diagram{border:1px solid var(--line);border-radius:8px;background:#fafafa;padding:18px;overflow:hidden}.diagram-title{font-size:12px;color:#555;margin-bottom:12px}.flowline{display:grid;grid-template-columns:repeat(5,minmax(105px,1fr));gap:20px}.node{position:relative;border:1px solid #bbb;border-radius:6px;background:#fff;padding:12px 9px;text-align:center;min-height:88px;display:flex;flex-direction:column;justify-content:center;transition:background .25s,color .25s,transform .25s,border .25s}.node:not(:last-child):after{content:"→";position:absolute;right:-18px;top:34px;color:#777}.node b{font-size:13px}.node small{color:#666;font-size:10px;line-height:1.35;margin-top:4px}.node.active{background:#171717;color:white;border-color:#171717;transform:translateY(-4px);box-shadow:0 7px 15px #0002}.node.active small{color:#ddd}.node.done{background:#e8e8e8}.diagram.animated .node.active{animation:pop .55s ease}@keyframes pop{0%{transform:scale(.96)}55%{transform:scale(1.045)}100%{transform:translateY(-4px)}}.flow-status{margin-top:13px;font-size:12px;color:#444;min-height:22px}.flow-svg{width:100%;height:9px;margin-top:9px}.flow-svg path{stroke:#aaa;stroke-width:2;stroke-dasharray:6 8;animation:dash 1.3s linear infinite}@keyframes dash{to{stroke-dashoffset:-28}}
+.tree-tools{display:flex;gap:8px;margin:14px 0}.tree-tools input{width:min(500px,100%);padding:9px 11px;border:1px solid #bbb;border-radius:5px}.tree-group{margin:11px 0;border:1px solid #ddd;border-radius:7px;overflow:hidden}.tree-group summary{cursor:pointer;list-style:none;background:#f1f1f1;padding:10px 12px;font-weight:700}.tree-group summary::-webkit-details-marker{display:none}.tree-group summary:before{content:"＋";display:inline-block;width:23px;color:#555}.tree-group[open] summary:before{content:"−"}.file-row{display:grid;grid-template-columns:minmax(230px,38%) 1fr;gap:10px;padding:9px 12px;border-top:1px solid #eee}.file-row code{font:11px var(--mono);overflow-wrap:anywhere;color:#111}.file-row span{font-size:12px;color:#555}.file-row[hidden]{display:none}.callout{border-left:3px solid #555;background:#f1f1f1;padding:11px 14px;margin:12px 0;color:#333;font-size:13px}.foot{border-top:1px solid #ddd;color:#666;font-size:11px;padding:22px 0;margin-top:40px}.badge{display:inline-block;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font:10px var(--mono);color:#444}
+@media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static;height:auto;border-right:0;border-bottom:1px solid #ddd;padding:7px 14px}.aside-title{display:none}.nav{display:flex;overflow:auto}.nav a{white-space:nowrap}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.content{padding:15px}.grid,.grid3{grid-template-columns:1fr}.flowline{grid-template-columns:1fr;gap:8px}.node{min-height:60px}.node:not(:last-child):after{content:"↓";right:calc(50% - 5px);top:auto;bottom:-15px}.file-row{grid-template-columns:1fr;gap:2px}.top{padding:8px 12px}.brand small{display:none}.actions .btn{font-size:11px;padding:6px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}@media print{.top,aside,.flow-select,.codehead button{display:none!important}.layout{display:block}.content{padding:0}.section{break-inside:avoid;margin-bottom:24px}.hero,.card,.diagram,.code,.tree-group{break-inside:avoid;box-shadow:none;background:white}pre{max-height:none;white-space:pre-wrap;overflow-wrap:anywhere}}
+</style></head>
+<body>
+<header class="top"><div class="brand"><span class="mark">PK</span><span>PhotoKeep <small style="font-weight:400;color:#666">คู่มือเดินโค้ด</small></span></div><div class="actions"><button class="btn" id="present">โหมดพรีเซนต์</button><button class="btn" onclick="print()">พิมพ์ / PDF</button></div></header>
+<div class="layout"><aside><p class="aside-title">สารบัญ</p><nav class="nav"><a href="#start">เริ่มต้น</a><a href="#architecture">ภาพระบบ</a><a href="#flows">ไดอะแกรม</a><a href="#frontend">หน้าบ้าน</a><a href="#go">Go API / bridge</a><a href="#storage">ข้อมูลและไฟล์</a><a href="#ai">AI jobs</a><a href="#gateway">Gateway</a><a href="#search">ค้นหา</a><a href="#themes">Theme</a><a href="#catalog">ไฟล์ทั้งหมด</a><a href="#demo">ลำดับพรีเซนต์</a></nav></aside>
+<main class="content">
+<section class="hero" id="start"><div class="kicker">SOURCE CODE TOUR · PHOTOKEEP</div><h1>จากรูปในโฟลเดอร์<br>ไปถึงรูปที่ค้นเจอ</h1><p>คู่มืออธิบายโครงสร้างโปรเจกต์และเส้นทางการทำงานของ PhotoKeep จาก source code ปัจจุบัน แยกตามหน้าบ้าน Go bridge/service, ฐานข้อมูล, AI Gateway และไฟล์ช่วยรัน พร้อมโค้ด excerpt จริงที่คัดลอกได้</p><div class="pills"><span class="pill">Wails v2</span><span class="pill">Go</span><span class="pill">Nuxt 4 / Vue 3</span><span class="pill">SQLite + GORM + FTS5</span><span class="pill">AI Gateway แยก process</span></div></section>
+<div class="metrics"><div class="metric"><b>3 ชั้น</b><span>UI → Wails/Go → Storage / Gateway</span></div><div class="metric"><b>4 flows</b><span>สำรอง · วิเคราะห์ · ค้นหา · ธีม</span></div><div class="metric"><b>768 px</b><span>ขนาดด้านยาวก่อนส่งวิเคราะห์ในแอป</span></div><div class="metric"><b>2 API paths</b><span>Wails bindings ในแอป และ HTTP ใน Gateway</span></div></div>
+<section class="section" id="architecture"><div class="section-head"><span class="num">01</span><div><h2>ภาพรวมโครงสร้าง</h2><p>PhotoKeep เป็น desktop app; หน้า Vue ไม่ยิง Go REST API แต่เรียกเมธอดที่ Wails bind ให้โดยตรง</p></div></div><div class="grid3"><article class="card"><h3>Frontend</h3><p>หน้า gallery/settings/logs, event listeners, thumbnail queue, theme และ progress state</p></article><article class="card"><h3>App bridge + service</h3><p><code>app.go</code> รับคำสั่งจาก UI แล้วเรียก business logic ใน <code>internal/photokeep</code></p></article><article class="card"><h3>Resources</h3><p>SQLite และไฟล์อยู่ในเครื่อง ส่วน caption ผ่าน AI Gateway; embedding service ถูกเรียกแยกตามค่าตั้งค่า</p></article></div><div class="callout"><b>ขอบเขต API:</b> ตัวแอปไม่ได้เปิด REST API สำหรับ UI. <code>window.go.main.App</code> คือ Wails JavaScript binding. Gateway เป็น HTTP server แยก process สำหรับงาน AI</div><div class="code"><div class="codehead"><span>main.go · สร้าง Wails window และ bind App</span><button class="copy">คัดลอก</button></div><pre><code>app, err := NewApp("")
+if err != nil {
+    log.Fatal(err)
+}
+defer app.close()
+
+err = wails.Run(&amp;options.App{
+    Title: "PhotoKeep — สำรองรูปภาพ",
+    AssetServer: &amp;assetserver.Options{Assets: assets},
+    OnStartup: app.Startup,
+    Bind: []interface{}{app},
+})</code></pre><div class="source-note">ไฟล์จริง: <code>main.go</code> · excerpt ตัดเฉพาะจุดสร้าง window/bridge · UI assets ฝังผ่าน <code>go:embed all:frontend/dist</code></div></div></section>
+<section class="section" id="flows"><div class="section-head"><span class="num">02</span><div><h2>ไดอะแกรมการทำงานแบบเคลื่อนไหว</h2><p>เลือก flow เพื่อดูว่า request เคลื่อนผ่านไฟล์และส่วนประกอบใดบ้าง</p></div></div><div class="flow-select"><button data-flow="backup" class="active">สำรองรูป</button><button data-flow="ai">วิเคราะห์ภาพ</button><button data-flow="search">ค้นหา</button><button data-flow="theme">นำเข้า Theme</button></div><div class="diagram animated"><div class="diagram-title" id="diagramTitle"></div><div class="flowline" id="flowline"></div><svg class="flow-svg" viewBox="0 0 800 9" preserveAspectRatio="none"><path d="M0 4H800" fill="none"/></svg><div class="flow-status" id="flowStatus" aria-live="polite"></div></div><div class="grid" style="margin-top:12px"><article class="card"><h3>จุดที่ควรพูดประกอบ</h3><p id="flowExplain"></p></article><article class="card"><h3>ไฟล์หลักของ flow นี้</h3><p id="flowFiles" class="mono"></p></article></div></section>
+<section class="section" id="frontend"><div class="section-head"><span class="num">03</span><div><h2>หน้าบ้าน — Nuxt / Vue</h2><p>component แบ่งตามหน้าที่; component หลักจัด state และเรียก Go bridge ส่วน child component ส่ง event กลับ</p></div></div><div class="grid"><article class="card"><h3>PhotoKeepApp.vue</h3><p>Root controller: โหลด state, เรียก bridge, คุม gallery paging/search, backup progress, AI job polling, folder picker, modal และ view composition</p></article><article class="card"><h3>GalleryPanel.vue</h3><p>แสดงรายการรูป, search bar, infinite pagination สองทิศทาง, scroll rail, hover preview และแจ้ง parent ขอ thumbnail</p></article><article class="card"><h3>Settings / Dialogs</h3><p>แยกการตั้งค่า, เลือกโฟลเดอร์, progress backup, รายละเอียดรูป, theme และ AI error log เป็น component</p></article><article class="card"><h3>Composables / types</h3><p><code>usePhotoKeepTheme.ts</code> ดูแลธีมที่เลือก; <code>types/photo.ts</code> เป็นสัญญาข้อมูล TypeScript</p></article></div><div class="code"><div class="codehead"><span>frontend/app/components/PhotoKeepApp.vue · เรียก Wails bridge</span><button class="copy">คัดลอก</button></div><pre><code>const api = () =&gt; (window as any).go?.main?.App
+
+const result = await api().SearchPage(
+  searchQuery,
+  '',
+  photosOffset.value,
+  PHOTO_PAGE_SIZE,
+)
+photos.value = result.photos
+searchTotal.value = result.total</code></pre><div class="source-note">Source path: <code>frontend/app/components/PhotoKeepApp.vue</code> · ใช้ Wails binding ไม่ใช่ REST call จาก browser</div></div></section>
+<section class="section" id="go"><div class="section-head"><span class="num">04</span><div><h2>Go API ของแอป — Wails bridge</h2><p>เมธอด public ของ App ถูก expose เป็น bindings; งานจริงส่งต่อให้ Service หรือ orchestration ใน app.go</p></div></div><div class="grid"><article class="card"><h3>App lifecycle</h3><ul><li><code>NewApp</code>: เปิด Service/ฐานข้อมูล</li><li><code>Startup</code>: เก็บ Wails context, ตรวจ job ค้าง, เริ่ม indexing</li><li><code>close</code>: cancel worker และปิด DB</li></ul></article><article class="card"><h3>เมธอดที่ UI เรียก</h3><ul><li>โฟลเดอร์: <code>GetState</code>, <code>SaveBackupSettings</code>, <code>PickDirectory</code></li><li>รูป: <code>Backup</code>, <code>Refresh</code>, <code>SearchPage</code>, <code>Preview</code></li><li>AI: start/stop/continue/retry + progress/logs</li><li>Theme: search/fetch Open VSX theme</li></ul></article></div><div class="code"><div class="codehead"><span>app.go · backup สำเร็จแล้วต่อคิว AI/indexing</span><button class="copy">คัดลอก</button></div><pre><code>if err == nil &amp;&amp; result.Failed == 0 &amp;&amp;
+    result.Added+result.Skipped &gt; 0 {
+    a.scheduleImageAIResume(0)
+    a.startPhotoEmbeddingIndex()
+}
+return result, err</code></pre><div class="source-note">Excerpt จาก <code>app.go</code> ฟังก์ชัน <code>Backup</code> · Wails event <code>backup:progress</code> ส่ง progress ไป UI</div></div><div class="callout">เส้นทางคำสั่ง: <code>Vue → window.go.main.App.Method() → App method → Service → SQLite/ไฟล์</code>. ไม่มี REST route ในแอป desktop layer.</div></section>
+<section class="section" id="storage"><div class="section-head"><span class="num">05</span><div><h2>ฐานข้อมูลและจัดการไฟล์</h2><p>GORM ใช้ SQLite; startup ทำ AutoMigrate และสร้าง FTS index. Record รูปเก็บ metadata, backup path, status และ embedding ถ้ามี</p></div></div><div class="grid"><article class="card"><h3>ตารางสำคัญ</h3><ul><li><code>photos</code>: path/hash/size/dimensions/caption/tags/AI status/embedding</li><li><code>settings</code>: source, destination, keep-original</li><li><code>files</code>: ประวัติไฟล์ที่สำรอง</li><li><code>image_ai_analysis_jobs</code>: progress, errors, duration, state</li></ul></article><article class="card"><h3>ความหมายของ hash</h3><p>SHA-256 ใน backup ใช้ตรวจไฟล์ซ้ำระหว่างสำรอง; source ปัจจุบันไม่ได้ใช้เป็น cache ผล AI เพื่อข้าม request</p></article></div><div class="code"><div class="codehead"><span>internal/photokeep/service.go · เปิด SQLite และ migrate schema</span><button class="copy">คัดลอก</button></div><pre><code>sqlDB.SetMaxOpenConns(1)
+if err := db.Exec("PRAGMA busy_timeout = 5000").Error; err != nil {
+    return nil, err
+}
+if err := db.AutoMigrate(
+    &amp;FileRecord{}, &amp;Setting{}, &amp;Photo{}, &amp;ImageAIAnalysisJob{},
+).Error; err != nil {
+    return nil, err
+}
+if err := ensurePhotoSearchIndex(db); err != nil {
+    return nil, err
+}</code></pre><div class="source-note">Excerpt จาก <code>internal/photokeep/service.go</code></div></div><div class="code"><div class="codehead"><span>internal/photokeep/backup.go · filter hidden/non-image files</span><button class="copy">คัดลอก</button></div><pre><code>if path != state.Source &amp;&amp; strings.HasPrefix(entry.Name(), ".") {
+    if entry.IsDir() {
+        return filepath.SkipDir
+    }
+    return nil
+}
+if entry.IsDir() || !entry.Type().IsRegular() ||
+    !imageExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
+    return nil
+}</code></pre><div class="source-note">Excerpt จริงจาก WalkDir: ข้าม hidden files/directories และไฟล์ที่ไม่ใช่ภาพตาม extension ที่รองรับ</div></div></section>
+<section class="section" id="ai"><div class="section-head"><span class="num">06</span><div><h2>งานวิเคราะห์ภาพและคิว</h2><p>Go เตรียม JPEG ขนาดเล็ก ส่ง Gateway ตรวจ response/retry แล้วบันทึกผลรายรูปลง DB</p></div></div><div class="grid3"><article class="card"><h3>1 · เตรียมรูป</h3><p><code>image_prepare.go</code> decode รูป, scale ด้านยาวไม่เกิน 768 px, encode JPEG quality 82 และสร้าง temp file</p></article><article class="card"><h3>2 · ส่ง/ตรวจผล</h3><p><code>image_ai.go</code> health/concurrency check, multipart HTTP, retry/backoff และตรวจ caption/tag</p></article><article class="card"><h3>3 · คิว/บันทึก</h3><p><code>image_ai_jobs.go</code> สร้าง job, เปลี่ยนสถานะ, persist success/failure และเก็บ resume records</p></article></div><div class="code"><div class="codehead"><span>internal/photokeep/image_prepare.go · resize ก่อนส่ง AI</span><button class="copy">คัดลอก</button></div><pre><code>if width &gt; maxSide || height &gt; maxSide {
+    scale := float64(maxSide) / float64(max(width, height))
+    newWidth := max(1, int(float64(width)*scale))
+    newHeight := max(1, int(float64(height)*scale))
+    dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+    draw.ApproxBiLinear.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+    img = dst
+}
+var buffer bytes.Buffer
+if err := jpeg.Encode(&amp;buffer, img, &amp;jpeg.Options{Quality: 82}); err != nil {
+    return nil, err
+}</code></pre><div class="source-note">Excerpt จริง; default maxSide คือ 768 px; client ใช้ <code>imageAIAnalysisMaxSide = 768</code>.</div></div><div class="grid"><article class="card"><h3>Retry และ validation</h3><p>จำแนก retryable HTTP status, Retry-After, transport error, invalid JSON, caption ว่าง และผล validation ที่ไม่ผ่าน; บันทึก error รายรูป</p></article><article class="card"><h3>Progress</h3><p>Queue DTO มี total/completed/pending/analyzing/failed/elapsed/paused; UI ขอ progress และสั่ง stop/continue/retry ผ่าน bridge</p></article></div></section>
+<section class="section" id="gateway"><div class="section-head"><span class="num">07</span><div><h2>AI Gateway — service แยกจากแอป</h2><p>Gateway โหลด provider จาก environment, เปิด HTTP handler, ตรวจ token เมื่อกำหนด, จำกัด concurrency แล้วเรียก analyzer</p></div></div><div class="flowline"><div class="node"><b>App</b><small>multipart file<br>HTTP client</small></div><div class="node"><b>Gateway server</b><small>auth · size limit<br>semaphore</small></div><div class="node"><b>Provider selector</b><small>gateway.env<br>xKiro / Cloudflare</small></div><div class="node"><b>AI providers</b><small>key rotation<br>quota handling</small></div><div class="node"><b>JSON response</b><small>caption<br>tags · model</small></div></div><div class="code"><div class="codehead"><span>services/ai-gateway/internal/gateway/server.go · routes ใน source</span><button class="copy">คัดลอก</button></div><pre><code>func (s *Server) Handler() http.Handler {
+    mux := http.NewServeMux()
+    mux.HandleFunc("GET /health", s.health)
+    mux.HandleFunc("POST /v1/analyze", s.analyze)
+    return mux
+}</code></pre><div class="source-note">ใน Gateway source checkout นี้ลงทะเบียน health และ analyze เท่านั้น; ยืนยัน deployment ก่อนอ้างว่ามี embedding route</div></div><div class="grid"><article class="card"><h3>provider.go</h3><p>เลือก provider, อ่าน keys/accounts, model และ concurrency จาก environment</p></article><article class="card"><h3>xkiro.go / cloudflare_thaillm.go</h3><p>xKiro key pool หมุน/ลองคีย์; Cloudflare สร้าง caption อังกฤษ แล้ว ThaiLLM แปลงเป็นคำอธิบาย/แท็กตาม implementation</p></article></div><div class="callout">ค่า secret ต้องอยู่ใน <code>gateway.env</code> บนเครื่อง Gateway. ตัวอย่างใน repo เป็น placeholder; ห้ามนำ <code>.env</code> หรือ <code>.env.gateway</code> ขึ้นเว็บ</div></section>
+<section class="section" id="search"><div class="section-head"><span class="num">08</span><div><h2>ระบบค้นหา</h2><p>ค้น lexical ใน SQLite ก่อน จากนั้นพยายามทำ semantic query; หาก embedding ใช้ไม่ได้ก็คืน lexical results</p></div></div><div class="flowline"><div class="node"><b>SearchPage</b><small>query + pagination</small></div><div class="node"><b>FTS5</b><small>filename / caption / tags</small></div><div class="node"><b>Text embedding</b><small>query vector (ถ้าพร้อม)</small></div><div class="node"><b>Cosine</b><small>เทียบ vectors ในเครื่อง</small></div><div class="node"><b>Fuse + page</b><small>รวมอันดับ / offset</small></div></div><div class="grid" style="margin-top:12px"><article class="card"><h3>Lexical</h3><p><code>photos_search.go</code> ใช้ FTS5 trigram index กับ filename/description/tags พร้อม ranking และ pagination</p></article><article class="card"><h3>Semantic</h3><p><code>embeddings.go</code> มี client/persistence/cosine; <code>app.go</code> ขอ query embedding แล้วผสาน semantic score กับ lexical results. Model ต้องตรงกัน</p></article></div><div class="code"><div class="codehead"><span>app.go · fallback เมื่อไม่มี embedding หรือ API ใช้ไม่ได้</span><button class="copy">คัดลอก</button></div><pre><code>lexical, err := a.service.SearchPage(query, tag, 0, 0)
+if err != nil {
+    return photokeep.SearchResult{}, err
+}
+hasEmbeddings, err := a.service.HasPhotoEmbeddings()
+if err != nil || !hasEmbeddings {
+    return pageSearchResult(lexical, offset, limit), nil
+}
+vector, err := a.queryEmbedding(requestCtx, query, client)
+if err != nil {
+    return pageSearchResult(lexical, offset, limit), nil
+}</code></pre><div class="source-note">ย่อจาก searchPage ใน <code>app.go</code>: lexical ทำก่อน; semantic ล้มเหลวยังมีผลลัพธ์ข้อความ</div></div><div class="callout"><b>ข้อจำกัด:</b> คุณภาพ semantic ขึ้นกับโมเดลและ vector index. อย่ารับประกันความแม่นหรือ synonym โดยไม่มี benchmark ชุดภาพจริง</div></section>
+<section class="section" id="themes"><div class="section-head"><span class="num">09</span><div><h2>นำเข้า Theme</h2><p>ค้น package จาก Open VSX, backend ตรวจ checksum; frontend parse JSONC, validate สี แล้วเก็บ palette ที่รองรับ</p></div></div><div class="flowline"><div class="node"><b>ค้นหา</b><small>Open VSX API</small></div><div class="node"><b>เลือก Theme</b><small>Wails method</small></div><div class="node"><b>ตรวจ VSIX</b><small>SHA-256 + path guard</small></div><div class="node"><b>แปลง palette</b><small>Zod + JSONC</small></div><div class="node"><b>ใช้/บันทึก</b><small>localStorage</small></div></div><div class="grid" style="margin-top:12px"><article class="card"><h3>Go · openvsx_themes.go</h3><p>ตรวจ identifier, โหลด metadata/checksum/package, verify SHA-256, จำกัด ZIP entries และอ่านไฟล์ theme</p></article><article class="card"><h3>TypeScript · openvsx-theme.ts</h3><p>validate response ด้วย Zod, parse JSONC, จำกัด include path ให้อยู่ใน package และ normalize สีเป็น palette</p></article></div><div class="code"><div class="codehead"><span>frontend/app/utils/openvsx-theme.ts · parse JSONC แล้วตรวจ object</span><button class="copy">คัดลอก</button></div><pre><code>function parseJSONC(text: string, filename: string): unknown {
+  const errors: ParseError[] = []
+  const value: unknown = parse(text, errors, { allowTrailingComma: true })
+  if (errors.length || !value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(&#96;${filename} ไม่ใช่ JSON/JSONC ที่ถูกต้อง&#96;)
+  }
+  return value
+}</code></pre><div class="source-note">Excerpt จาก utility; backend ตรวจ checksum ก่อนส่ง package files ให้ frontend</div></div></section>
+<section class="section" id="catalog"><div class="section-head"><span class="num">10</span><div><h2>สารบัญไฟล์ทั้งโปรเจกต์</h2><p>รายการมาจาก source/config/docs ใน checkout นี้ ไม่รวม build output, node_modules, database และไฟล์ลับเฉพาะเครื่อง</p></div></div><div class="tree-tools"><input id="fileFilter" type="search" placeholder="กรองชื่อไฟล์หรือคำอธิบาย…" aria-label="กรองไฟล์"><span class="badge" id="fileCount"></span></div><div id="catalogGroups"></div></section>
+<section class="section" id="demo"><div class="section-head"><span class="num">11</span><div><h2>ลำดับพูดและสาธิต</h2><p>ใช้ flow ที่ทำซ้ำได้ และเปิดไฟล์ต้นทางข้างเว็บเมื่อต้องชี้โค้ดจริง</p></div></div><div class="grid"><article class="card"><h3>นาที 1–2 · ภาพรวม</h3><p>อธิบาย desktop Wails, Vue UI, Go service และ local SQLite. เปิด diagram architecture.</p></article><article class="card"><h3>นาที 3 · สำรอง</h3><p>เลือก source/destination, อธิบาย hidden-file filter, duplicate check, copy/move และ progress.</p></article><article class="card"><h3>นาที 4–5 · AI</h3><p>เริ่ม job ตัวอย่าง; ชี้ resize 768 px → Gateway → validate → DB status.</p></article><article class="card"><h3>นาที 6 · ค้นหา</h3><p>สาธิตคำค้น lexical/semantic และอธิบาย fallback เมื่อ embedding service offline.</p></article><article class="card"><h3>นาที 7 · Theme</h3><p>ค้น theme → preview → import; พูดเรื่อง checksum และ JSONC/schema guard.</p></article><article class="card"><h3>นาที 8 · สรุป</h3><p>แยก Wails bridge จาก Gateway HTTP. ตรวจ endpoint/model/index ก่อนพูดถึง deployment.</p></article></div><div class="callout"><b>โค้ดในหน้านี้:</b> excerpt จริง/ย่อจาก source พร้อม path; ปุ่มคัดลอกช่วยวางลง editor. เปิด repo แล้วใช้ Quick Open ค้นชื่อไฟล์เพื่อดูบริบทเต็ม.</div></section>
+<footer class="foot">PhotoKeep Code Tour · สร้างจาก source tree ที่ตรวจใน checkout นี้ ณ 24 ต.ค. 2569. ไม่มีเนื้อหา .env, .env.gateway หรือ build artifacts เพื่อไม่เผยข้อมูลเฉพาะเครื่อง/secret. ตรวจ config/runtime ก่อนอธิบาย deployment.</footer>
+</main></div>
+<script>
+const groups=[
+['Root · entrypoint / config',[
+['main.go','Wails entrypoint, embed frontend/dist, สร้าง window และ bind App'],
+['app.go','Wails bridge/orchestration: state, backup, AI jobs, search, embeddings, theme methods'],
+['go.mod','Go module path และ dependency versions'],['go.sum','checksum ของ Go modules'],
+['wails.json','Wails build/dev commands และ app metadata'],['run.sh','ตรวจ Go/npm, โหลด env เฉพาะเครื่อง, optionally start local gateway แล้ว run Wails dev'],
+['.gitignore','รายการ build artifacts, dependency folders, database และไฟล์ env ที่ Git ไม่ควรติดตาม'],
+['.env.example','ตัวอย่าง app gateway endpoint config ไม่มี key จริง'],['README.md','คู่มือโปรเจกต์/รันและลิงก์เอกสาร']]],
+['internal/photokeep · Go business logic',[
+['analysis.go','สร้างคำ/ข้อมูลวิเคราะห์พื้นฐานและตรวจสีใน workflow ที่เรียกใช้'],
+['backup.go','scan source, hidden/image filter, hash/dedup, copy/move และ progress'],
+['caption.go','normalize caption และจัดการ legacy AI/tag records ตอนเปิด service'],
+['embeddings.go','embedding HTTP client, indexing, vector persistence/encoding และ cosine'],
+['image_ai.go','Gateway HTTP client, health/concurrency, multipart, retry/error classification/validation'],
+['image_ai_jobs.go','สร้างและบันทึก AI job, progress, retry errors และ interrupted jobs'],
+['image_prepare.go','decode รูป, resize/encode JPEG สำหรับ AI, temporary file lifecycle'],
+['models.go','GORM models และ JSON DTOs ของรูป/settings/jobs/search'],
+['openvsx_themes.go','Open VSX search/fetch, filter theme, checksum verification และอ่าน theme files'],
+['photos_metadata.go','update caption/description และ tags ของรูป'],
+['photos_preview.go','สร้าง/อ่าน preview-thumbnail และ cache'],
+['photos_search.go','FTS5 index, lexical matching/ranking, pagination และ tag cloud'],
+['search_terms.go','helper normalize/tokenize search text; ตรวจ call sites ก่อนระบุ helper ใดเป็น synonym mapping'],
+['service.go','SQLite bootstrap, migrate/index, lifecycle, state/refresh/clear operations'],
+['settings.go','อ่านและบันทึก folder settings กับ keep-original']]],
+['Frontend · Nuxt / Vue / CSS',[
+['frontend/package.json','scripts และ dependencies: Nuxt, Vue, Zod, jsonc-parser, Lucide'],
+['frontend/package-lock.json','npm dependency lockfile'],
+['frontend/nuxt.config.ts','SPA mode, Nuxt app metadata/dev settings'],
+['frontend/tsconfig.json','TypeScript compiler configuration'],
+['frontend/scripts/copy-dist.mjs','คัดลอก generated static assets ไป frontend/dist ที่ Go embed ใช้'],
+['frontend/app/app.vue','Nuxt app shell'],['frontend/app/pages/index.vue','หน้า entrypoint'],
+['frontend/app/layouts/default.vue','default page layout'],
+['frontend/app/components/PhotoKeepApp.vue','root controller: app state, Wails calls/events, backup, AI, search and view composition'],
+['frontend/app/components/gallery/GalleryPanel.vue','gallery grid, search, scrolling, pagination, thumbnails and hover preview'],
+['frontend/app/components/gallery/PhotoDetailDialog.vue','photo detail modal, caption/tag editor'],
+['frontend/app/components/backup/BackupProgressDialog.vue','backup/refresh status, progress and open backup folder UI'],
+['frontend/app/components/backup/SetupDialog.vue','first-run source/destination setup UI'],
+['frontend/app/components/settings/SettingsPanel.vue','settings sections, folders, appearance, library/theme controls'],
+['frontend/app/components/settings/OpenVSXThemePanel.vue','Open VSX discovery, installed themes, preview and import UI'],
+['frontend/app/components/ai/ImageAILogsPanel.vue','AI job/error list, timestamps and retry controls'],
+['frontend/app/components/shared/AppNavigation.vue','sidebar navigation and folder shortcut'],
+['frontend/app/components/shared/AppToast.vue','toast notifications'],
+['frontend/app/components/shared/FolderFields.vue','reusable folder/keep-original fields'],
+['frontend/app/components/shared/LoadingState.vue','loading/empty state UI'],
+['frontend/app/composables/usePhotoKeepTheme.ts','system theme preference, apply/import/select/remove and localStorage'],
+['frontend/app/types/photo.ts','shared frontend DTO/type definitions'],
+['frontend/app/utils/openvsx-theme.ts','Zod schemas, JSONC parsing, path safety and palette conversion'],
+['frontend/app/assets/css/main.css','base layout/component styles'],
+['frontend/app/assets/css/theme.css','semantic theme variables'],
+['frontend/app/assets/css/appearance.css','system/appearance behavior styles'],
+['frontend/app/assets/css/imported-theme.css','CSS variables mapped from imported palette']]],
+['AI Gateway · HTTP service',[
+['services/ai-gateway/cmd/photokeep-ai-gateway/main.go','load provider/config, listen address and start HTTP server'],
+['services/ai-gateway/internal/gateway/server.go','HTTP handlers, health, auth, limits, semaphore and response JSON'],
+['services/ai-gateway/internal/gateway/provider.go','provider selection; parse env keys/accounts and concurrency'],
+['services/ai-gateway/internal/gateway/xkiro.go','xKiro analyzer/key pool, pacing, retries and image conversion'],
+['services/ai-gateway/internal/gateway/cloudflare_thaillm.go','Cloudflare caption + ThaiLLM translation/tags, key cooldown and parsing']]],
+['Scripts · run / package',[
+['scripts/ai-gateway.env.example','environment template for provider, keys, model and concurrency'],
+['scripts/ai-gateway-source-start.sh','start gateway source package using gateway.env'],
+['scripts/ai-gateway-start.sh','start packaged gateway binary'],
+['scripts/run-ai-gateway.sh','run gateway directly from repository'],
+['scripts/package-ai-gateway-source.sh','collect source and dependencies into transfer archive'],
+['scripts/package-ai-gateway.sh','cross-compile binary, generate checksum and archive'],
+['scripts/make_icon.py','application icon generation helper']]],
+['Docs and demo assets',[
+['docs/ARCHITECTURE.md','architecture notes'],['docs/ai-gateway.md','gateway setup/provider documentation'],
+['docs/remote-ai-gateway-source.md','run gateway source on another machine'],
+['docs/remote-ai-gateway.md','run packaged gateway binary remotely'],
+['docs/search-guide.html','visual guide to search workflow'],['docs/presentation.html','presentation overview'],
+['docs/code-tour.html','ไฟล์หน้านี้: คู่มือเดินโค้ด รายการไฟล์ และ animated flows'],
+['docs/project/CHECKLIST.md','project checklist/status notes'],['docs/project/DESIGN.md','design reference'],
+['docs/project/PRODUCT.md','product context/requirements'],['docs/xkiro-experiment.md','xKiro experiment notes'],
+['demo/sample-source/garden.png','sample image for backup demonstration'],['demo/sample-source/sunset.png','sample image for backup demonstration']]]
+];
+const flows={
+backup:{title:'FLOW A · สำรองภาพ',status:['ตรวจ source/destination และ settings','WalkDir กรอง hidden และ non-image','คำนวณ hash แล้ว copy/move ไฟล์','บันทึก metadata ใน SQLite','ส่ง progress event ให้ UI'],nodes:[['Vue UI','Gallery / progress dialog'],['Wails bridge','app.go · Backup()'],['Go Service','backup.go · workers'],['SQLite + disk','photos/files/image'],['Vue progress','backup:progress']],explain:'ผู้ใช้เริ่ม Backup จาก UI; App ส่ง progress event ระหว่าง Service scan/copy. Service ตรวจ duplicate แล้วบันทึกสถานะ.',files:'PhotoKeepApp.vue → app.go → internal/photokeep/backup.go + service.go'},
+ai:{title:'FLOW B · วิเคราะห์ภาพ',status:['สร้าง job สำหรับภาพ pending','ย่อภาพและ encode เป็น JPEG','ส่ง multipart ไป /v1/analyze','Gateway เลือก provider/key และทำ inference','ตรวจผลแล้วเก็บ caption/tags/status'],nodes:[['Vue UI','start / pause / retry'],['Go job runner','image_ai_jobs.go'],['Image prep','JPEG ≤768 px'],['AI Gateway','HTTP analyze'],['SQLite','result + job']],explain:'Job เลือกรูป pending, ย่อภาพ, เรียก Gateway และบันทึกผลรายภาพเพื่อ progress และ retry.',files:'PhotoKeepApp.vue → app.go → image_ai_jobs.go + image_prepare.go + image_ai.go → gateway/server.go'},
+search:{title:'FLOW C · ค้นหารูป',status:['ส่ง query และ pagination','SQLite FTS5 สร้าง lexical results','ขอ query embedding เมื่อเหมาะสม','คำนวณ cosine กับ vectors ที่จัดทำดัชนี','รวมผล จัดอันดับ และแบ่งหน้า'],nodes:[['Vue search','query + page state'],['Wails bridge','SearchPage()'],['SQLite FTS5','filename/caption/tags'],['Embedding API','query vector'],['Ranked photos','fusion/fallback']],explain:'ค้นข้อความในเครื่องก่อน; หากมี vectors และ embedding service พร้อม จึงเพิ่ม semantic scores. หากไม่พร้อมยังแสดง lexical results.',files:'GalleryPanel.vue → PhotoKeepApp.vue → app.go → photos_search.go + embeddings.go'},
+theme:{title:'FLOW D · นำเข้า Theme',status:['ค้น package ที่มี color theme','เลือก extension version','ดาวน์โหลด VSIX แล้วตรวจ SHA-256','parse JSONC และ validate schema/path','แปลง palette แล้วบันทึกเพื่อใช้'],nodes:[['Theme panel','OpenVSXThemePanel.vue'],['Wails bridge','Search/Fetch theme'],['Open VSX','manifest + VSIX'],['Validation','SHA-256 + Zod'],['App palette','localStorage + CSS']],explain:'อ่านเฉพาะข้อมูล theme ที่รองรับ; checksum และ schema ต้องผ่านก่อนแปลงเป็น palette. ไม่ execute extension.',files:'OpenVSXThemePanel.vue → app.go → openvsx_themes.go → openvsx-theme.ts → usePhotoKeepTheme.ts'}
+};
+const catalog=document.querySelector('#catalogGroups');
+groups.forEach((g,i)=>{const d=document.createElement('details');d.className='tree-group';d.open=i<4;const s=document.createElement('summary');s.textContent=g[0];d.append(s);g[1].forEach(item=>{const row=document.createElement('div');row.className='file-row';row.dataset.search=(item[0]+' '+item[1]).toLowerCase();row.innerHTML='<code></code><span></span>';row.querySelector('code').textContent=item[0];row.querySelector('span').textContent=item[1];d.append(row)});catalog.append(d)});
+let timer;const line=document.querySelector('#flowline');function showFlow(key){clearInterval(timer);const f=flows[key];document.querySelectorAll('[data-flow]').forEach(b=>b.classList.toggle('active',b.dataset.flow===key));document.querySelector('#diagramTitle').textContent=f.title;document.querySelector('#flowExplain').textContent=f.explain;document.querySelector('#flowFiles').textContent=f.files;line.innerHTML=f.nodes.map(n=>'<div class="node"><b>'+n[0]+'</b><small>'+n[1]+'</small></div>').join('');const nodes=[...line.querySelectorAll('.node')];let step=0;function tick(){nodes.forEach((n,i)=>{n.classList.toggle('active',i===step);n.classList.toggle('done',i<step)});document.querySelector('#flowStatus').textContent='ขั้น '+(step+1)+'/'+nodes.length+' · '+f.status[step];step=(step+1)%nodes.length}tick();timer=setInterval(tick,1150)}
+document.querySelectorAll('[data-flow]').forEach(b=>b.addEventListener('click',()=>showFlow(b.dataset.flow)));showFlow('backup');
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{const code=b.closest('.code').querySelector('code').innerText;try{await navigator.clipboard.writeText(code);b.textContent='คัดลอกแล้ว';setTimeout(()=>b.textContent='คัดลอก',1000)}catch{b.textContent='คัดลอกไม่ได้'}}));
+const filter=document.querySelector('#fileFilter'),rows=[...document.querySelectorAll('.file-row')];function filterFiles(){const q=filter.value.trim().toLowerCase();let n=0;rows.forEach(row=>{const show=!q||row.dataset.search.includes(q);row.hidden=!show;if(show)n++});document.querySelector('#fileCount').textContent=n+' / '+rows.length+' ไฟล์';if(q)document.querySelectorAll('.tree-group').forEach(d=>d.open=true)}filter.addEventListener('input',filterFiles);filterFiles();
+document.querySelector('#present').addEventListener('click',()=>{document.body.classList.toggle('present');document.querySelector('aside').hidden=document.body.classList.contains('present')});document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==filter){e.preventDefault();filter.focus()}if(e.key==='Escape'){document.body.classList.remove('present');document.querySelector('aside').hidden=false}});
+const sections=[...document.querySelectorAll('main section')],links=[...document.querySelectorAll('.nav a')];const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('active',a.hash==='#'+e.target.id))}),{rootMargin:'-20% 0px -70%'});sections.forEach(s=>obs.observe(s));
+</script></body></html>

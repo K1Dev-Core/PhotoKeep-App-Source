@@ -6,7 +6,26 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gorm.io/gorm"
 )
+
+func (a *Service) GetAppSetting(key string) (string, error) {
+	var setting AppSetting
+	err := a.db.First(&setting, "key = ?", strings.TrimSpace(key)).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", nil
+	}
+	return setting.Value, err
+}
+
+func (a *Service) SaveAppSetting(key, value string) error {
+	setting := AppSetting{Key: strings.TrimSpace(key), Value: strings.TrimSpace(value)}
+	if setting.Key == "" {
+		return errors.New("ชื่อการตั้งค่าห้ามว่าง")
+	}
+	return a.db.Save(&setting).Error
+}
 
 func (a *Service) SaveSettings(source, dest string) (State, error) {
 	return a.SaveBackupSettings(source, dest, true)

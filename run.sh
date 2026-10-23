@@ -37,7 +37,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-case "${PHOTOKEEP_AI_GATEWAY_URL:-http://127.0.0.1:8081/v1/analyze}" in
+case "${PHOTOKEEP_AI_GATEWAY_URL:-https://vision.k1god.com/v1/analyze}" in
   http://127.0.0.1:8081/*|http://localhost:8081/*)
     START_LOCAL_GATEWAY=1
     ;;

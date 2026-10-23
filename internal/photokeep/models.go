@@ -20,6 +20,13 @@ type Setting struct {
 
 func (Setting) TableName() string { return "settings" }
 
+type AppSetting struct {
+	Key   string `gorm:"primaryKey"`
+	Value string `gorm:"not null"`
+}
+
+func (AppSetting) TableName() string { return "app_settings" }
+
 type Photo struct {
 	ID              uint      `json:"id" gorm:"primaryKey"`
 	SourcePath      string    `json:"sourcePath"`

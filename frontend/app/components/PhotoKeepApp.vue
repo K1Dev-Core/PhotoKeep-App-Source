@@ -24,6 +24,7 @@ const searchTotal = ref(0), loadingMore = ref(false), loadingPrevious = ref(fals
 const thumbnailFailures = reactive<Record<number, boolean>>({})
 const selected = ref<Photo | null>(null), fullImage = ref('')
 const selectionMode = ref(false), selectedPhotoIds = ref<number[]>([]), aiSettings = ref<ImageAISettings>({ endpoint: '', searchEndpoint: '', provider: 'managed', model: '', keyCount: 0, concurrency: 8, configured: true })
+const gatewayUrl = ref('https://vision.k1god.com/v1/analyze'), gatewaySaving = ref(false)
 const analysisBusy = ref(false), currentImageAIJob = ref<ImageAIAnalysisJob | null>(null)
 const analysisControlBusy = ref(false), imageAILogsLoading = ref(false), imageAIRetrying = ref(false)
 const imageAIErrorLogs = ref<ImageAIErrorLog[]>([]), imageAIJobs = ref<ImageAIAnalysisJob[]>([])
@@ -177,6 +178,7 @@ async function refresh() {
     if (!setupDismissed.value) setupOpen.value = true
   }
   aiSettings.value = await api().GetImageAISettings() as ImageAISettings
+  gatewayUrl.value = aiSettings.value.endpoint || 'https://vision.k1god.com/v1/analyze'
   await updateImageAIProgress(false)
   await search()
 }
@@ -346,6 +348,19 @@ async function saveSettings() {
   if (setupOpen.value && setupMode.value === 'folder' && folderSettingsBusy.value) return
   const saved = await run<AppState>(() => api().SaveBackupSettings(source.value, dest.value, keepOriginal.value), 'settings', 'บันทึกโฟลเดอร์แล้ว')
   if (saved) { Object.assign(state, saved); query.value = ''; setupOpen.value = false; view.value = 'gallery'; await search() }
+}
+async function saveGatewayUrl() {
+  if (!api() || gatewaySaving.value) return
+  gatewaySaving.value = true
+  try {
+    aiSettings.value = await api().SaveImageAIGatewayURL(gatewayUrl.value) as ImageAISettings
+    gatewayUrl.value = aiSettings.value.endpoint
+    showToast('success', 'บันทึกที่อยู่ API วิเคราะห์ภาพแล้ว')
+  } catch (e: any) {
+    showToast('error', String(e?.message || e))
+  } finally {
+    gatewaySaving.value = false
+  }
 }
 async function updateImageAIProgress(refreshPhotos = true) {
   if (!api() || imageAIRefreshRunning) return
@@ -613,9 +628,9 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); clea
       <div class="main-body" :class="{ 'main-body-settings': view === 'settings' && !initializing, 'gallery-body': view === 'gallery' && configured && !initializing }">
         <div v-if="!hasBridge" class="message error" role="alert"><AlertCircle :size="18" />เปิดด้วยแอป PhotoKeep เพื่อใช้งานไฟล์ในเครื่อง</div>
         <LoadingState v-if="initializing" />
-        <Transition name="page-switch"><SettingsPanel v-if="!initializing && view === 'settings'" v-model:theme-preference="themePreference" v-model:source="source" v-model:dest="dest" v-model:keep-original="keepOriginal" :can-save="canSave && !folderSettingsBusy" :saving="busyAction === 'settings'" :clear-armed="clearArmed" :clearing="busyAction === 'clear'" :imported-themes="importedThemes" :selected-imported-theme-id="selectedImportedThemeId" @import-theme="importTheme" @select-theme="selectTheme" @remove-theme="removeTheme" @pick="pick" @save="saveSettings" @clear="clearDatabase" /></Transition>
+        <Transition name="page-switch"><SettingsPanel v-if="!initializing && view === 'settings'" v-model:theme-preference="themePreference" v-model:source="source" v-model:dest="dest" v-model:keep-original="keepOriginal" v-model:gateway-url="gatewayUrl" :can-save="canSave && !folderSettingsBusy" :saving="busyAction === 'settings'" :gateway-saving="gatewaySaving" :clear-armed="clearArmed" :clearing="busyAction === 'clear'" :imported-themes="importedThemes" :selected-imported-theme-id="selectedImportedThemeId" @import-theme="importTheme" @select-theme="selectTheme" @remove-theme="removeTheme" @pick="pick" @save="saveSettings" @save-gateway="saveGatewayUrl" @clear="clearDatabase" /></Transition>
         <Transition name="page-switch"><ImageAILogsPanel v-if="!initializing && view === 'logs'" :logs="imageAIErrorLogs" :jobs="imageAIJobs" :loading="imageAILogsLoading" :retrying="imageAIRetrying" @refresh="loadImageAILogs" @retry="retryFailedImageAI" /></Transition>
-        <GalleryPanel v-if="!initializing" v-show="view === 'gallery'" v-model:query="query" :configured="configured" :photos="photos" :result-total="searchTotal" :start-offset="photosOffset" :loading-more="loadingMore" :loading-previous="loadingPrevious" :thumbnails="thumbnails" :thumbnail-failures="thumbnailFailures" :searching="searching" :busy="busy || initializing || !hasBridge" :keep-original="state.keepOriginal" :backup-mode="busyAction === 'backup' ? backupMode : null" :selection-mode="selectionMode" :selected-photo-ids="selectedPhotoIds" :analysis-busy="analysisBusy" :analysis-control-busy="analysisControlBusy" :ai-configured="aiSettings.configured" :ai-progress="aiQueueProgress" @open-setup="openInitialSetup" @backup="backup" @open-photo="openPhoto" @selection-mode="toggleSelectionMode" @toggle-selection="togglePhotoSelection" @select-visible="selectVisiblePhotos" @load-more="loadMorePhotos" @load-previous="loadPreviousPhotos" @seek-photos="seekPhotos" @request-thumbnail="requestThumbnail" @analyze-selected="analyzeSelected" @stop-analysis="stopImageAIAnalysis" @continue-analysis="continueImageAIAnalysis" />
+        <GalleryPanel v-if="!initializing" v-show="view === 'gallery'" v-model:query="query" :configured="configured" :photos="photos" :result-total="searchTotal" :start-offset="photosOffset" :loading-more="loadingMore" :loading-previous="loadingPrevious" :thumbnails="thumbnails" :thumbnail-failures="thumbnailFailures" :searching="searching" :busy="busy || initializing || !hasBridge" :backup-active="busyAction === 'backup'" :keep-original="state.keepOriginal" :backup-mode="busyAction === 'backup' ? backupMode : null" :selection-mode="selectionMode" :selected-photo-ids="selectedPhotoIds" :analysis-busy="analysisBusy" :analysis-control-busy="analysisControlBusy" :ai-configured="aiSettings.configured" :ai-progress="aiQueueProgress" @open-setup="openInitialSetup" @backup="backup" @open-photo="openPhoto" @selection-mode="toggleSelectionMode" @toggle-selection="togglePhotoSelection" @select-visible="selectVisiblePhotos" @load-more="loadMorePhotos" @load-previous="loadPreviousPhotos" @seek-photos="seekPhotos" @request-thumbnail="requestThumbnail" @analyze-selected="analyzeSelected" @stop-analysis="stopImageAIAnalysis" @continue-analysis="continueImageAIAnalysis" />
       </div>
     </main>
     <SetupDialog v-if="setupOpen && !initializing" v-model:source="source" v-model:dest="dest" v-model:keep-original="keepOriginal" :mode="setupMode" :can-save="canSave && !folderSettingsBusy" :saving="busyAction === 'settings'" @pick="pick" @close="closeSetup" @save="saveSettings" />

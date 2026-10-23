@@ -46,7 +46,7 @@ func NewService(dbPath string) (*Service, error) {
 	if err := db.Exec("PRAGMA busy_timeout = 5000").Error; err != nil {
 		return nil, err
 	}
-	if err := db.AutoMigrate(&FileRecord{}, &Setting{}, &Photo{}, &ImageAIAnalysisJob{}); err != nil {
+	if err := db.AutoMigrate(&FileRecord{}, &Setting{}, &AppSetting{}, &Photo{}, &ImageAIAnalysisJob{}); err != nil {
 		return nil, err
 	}
 	if err := ensurePhotoSearchIndex(db); err != nil {

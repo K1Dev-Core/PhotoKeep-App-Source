@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>PhotoKeep — ระบบจัดการคลังภาพ</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101a1b;--panel:#172526;--panel2:#1c2b2c;--ink:#f1f5ee;--muted:#a6b6af;--line:#314542;--mint:#a9e2bf;--green:#3ba875;--lime:#d0ed91;--amber:#ffd28c;--red:#ff9d91;--blue:#a6c8ff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:82px}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#254541 0,transparent 35%),var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65}a{color:var(--mint);text-decoration:none}a:hover{text-decoration:underline}button{font:inherit;color:inherit}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px clamp(16px,4vw,56px);background:#101a1beF;border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}.brand{display:flex;align-items:center;gap:12px;font-weight:750;letter-spacing:.02em}.brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,var(--lime),var(--mint));color:#11211c;font-size:20px}.brand small{display:block;color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase}.top-actions{display:flex;align-items:center;gap:8px}.button{border:1px solid var(--line);background:var(--panel);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px}.button:hover{border-color:var(--mint);background:var(--panel2)}.button.primary{background:var(--mint);border-color:var(--mint);color:#11211c;font-weight:700}
+    .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:0 auto}.side{position:sticky;top:61px;height:calc(100vh - 61px);overflow:auto;padding:28px 16px 32px 24px;border-right:1px solid var(--line)}.side-label{margin:0 0 12px 8px;color:#849991;font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.nav{display:grid;gap:4px}.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:#becbc5;font-size:13px}.nav a:hover,.nav a.active{background:#263836;color:var(--lime);text-decoration:none}.nav .num{width:22px;color:#70847b;font:11px var(--mono)}.side-note{margin:24px 4px;padding:13px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:11px}.side-note strong{display:block;margin-bottom:4px;color:var(--mint);font-size:12px}.progress-track{height:3px;margin:14px 0 0;background:#314542;border-radius:99px;overflow:hidden}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--lime));transition:width .2s}
+    main{min-width:0;padding:clamp(20px,4vw,58px)}.hero{position:relative;overflow:hidden;min-height:450px;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,6vw,76px);border:1px solid #3b5b52;border-radius:28px;background:linear-gradient(130deg,#1d302d 0,#1b292a 58%,#233b35 100%);box-shadow:0 24px 90px #0003}.hero:after{content:"";position:absolute;width:420px;height:420px;right:-100px;top:-120px;border:1px solid #6cb79033;border-radius:50%;box-shadow:0 0 0 44px #6cb7900b,0 0 0 94px #6cb79008}.eyebrow{color:var(--lime);font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}.hero h1{position:relative;z-index:1;max-width:760px;margin:16px 0 12px;font-size:clamp(38px,6vw,76px);line-height:1.02;letter-spacing:-.045em}.hero h1 span{color:var(--mint)}.hero p{position:relative;z-index:1;max-width:700px;margin:12px 0;color:#c1d0c9;font-size:clamp(16px,2vw,20px)}.hero-meta{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:25px}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #527168;border-radius:999px;padding:6px 11px;color:#dbe8df;background:#11201c66;font-size:12px}.dot{width:7px;height:7px;border-radius:50%;background:var(--lime)}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 64px}.stat{padding:17px;border:1px solid var(--line);border-radius:15px;background:#162223}.stat strong{display:block;color:var(--lime);font-size:25px;line-height:1.2}.stat span{color:var(--muted);font-size:12px}.section{margin:0 0 68px;scroll-margin-top:88px}.section-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}.section-num{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid #426354;border-radius:13px;background:#20332e;color:var(--lime);font:13px var(--mono)}.section h2{margin:0;font-size:clamp(25px,3vw,38px);letter-spacing:-.025em;line-height:1.2}.section-head p{margin:7px 0 0;color:var(--muted);max-width:760px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{padding:20px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(155deg,#1b2a2b,#152122)}.card h3{margin:0 0 8px;font-size:16px}.card p{margin:0;color:#b3c1bb;font-size:13px}.card .icon{display:grid;place-items:center;width:34px;height:34px;margin-bottom:12px;border:1px solid #3c5b50;border-radius:10px;background:#20352e;color:var(--mint);font-size:17px}.card ul{margin:10px 0 0;padding-left:18px;color:#b7c5be;font-size:13px}.card li+li{margin-top:6px}
+    .flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;gap:10px}.flow-node{position:relative;padding:17px 14px;border:1px solid var(--line);border-radius:14px;background:#172526}.flow-node:not(:last-child):after{content:"→";position:absolute;right:-15px;top:40%;z-index:2;color:var(--lime);font-size:20px}.flow-node b{display:block;margin-bottom:6px;color:var(--mint);font-size:14px}.flow-node small{color:var(--muted);font-size:11px}.flow-node .tag{display:inline-block;margin-top:9px;padding:3px 7px;border-radius:6px;background:#263b35;color:var(--lime);font:10px var(--mono)}.callout{margin:16px 0;padding:14px 16px;border-left:3px solid var(--amber);border-radius:0 10px 10px 0;background:#332c20;color:#e5d5b5;font-size:13px}.callout.info{border-color:var(--blue);background:#1b2a39;color:#c5d8f2}.callout.good{border-color:var(--mint);background:#1c3028;color:#c2e4cd}.callout strong{color:#fff}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.table{width:100%;border-collapse:collapse;min-width:580px;background:#172526}.table th,.table td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:12px}.table th{background:#20302e;color:var(--lime);font-size:11px;letter-spacing:.04em}.table td{color:#c2cec8}.table tr:last-child td{border-bottom:0}.mono{font-family:var(--mono);font-size:.92em;color:#c6dca0}.code-card{overflow:hidden;border:1px solid #344744;border-radius:15px;background:#0b1112}.code-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px;border-bottom:1px solid #2b3a38;background:#141f20;color:var(--muted);font-size:11px}.code-head .source{font-family:var(--mono);color:#adc7b7}.copy{border:1px solid #384b47;border-radius:7px;background:#1e2e2d;padding:5px 8px;color:#cfe1d6;font-size:10px;cursor:pointer}.copy:hover{border-color:var(--mint)}pre{overflow:auto;max-height:420px;margin:0;padding:17px;color:#d8e5dc;font:12px/1.65 var(--mono);tab-size:2}pre code{white-space:pre}.code-caption{padding:9px 14px;border-top:1px solid #2b3a38;color:#849a90;font-size:10px}
+    .timeline{position:relative;display:grid;gap:11px;margin:0;padding:0;list-style:none}.timeline:before{content:"";position:absolute;left:16px;top:12px;bottom:12px;width:1px;background:#38564c}.timeline li{position:relative;display:grid;grid-template-columns:34px 1fr;gap:12px}.timeline .step{position:relative;z-index:1;display:grid;place-items:center;width:33px;height:33px;border:1px solid #53745f;border-radius:50%;background:#20332e;color:var(--lime);font:11px var(--mono)}.timeline .body{padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#172526}.timeline .body b{display:block;color:#eaf2ec;font-size:13px}.timeline .body span{display:block;margin-top:3px;color:var(--muted);font-size:12px}.badge{display:inline-block;margin-left:7px;padding:2px 6px;border:1px solid #395d4d;border-radius:5px;color:var(--mint);font:9px var(--mono)}
+    .files{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.file{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#162223}.file code{color:var(--mint);font:11px var(--mono)}.file span{color:var(--muted);font-size:11px;text-align:right}.footer{margin-top:60px;padding:25px 0;border-top:1px solid var(--line);color:#879991;font-size:11px}.footer strong{color:var(--mint)}.source-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.source-list code{padding:5px 8px;border:1px solid var(--line);border-radius:7px;color:#c4d5cb;font:10px var(--mono)}.present-mode .side{display:none}.present-mode .shell{grid-template-columns:1fr;max-width:1100px}.present-mode main{padding:34px clamp(18px,6vw,84px)}.present-mode .section{min-height:75vh;padding-top:8vh}.present-mode .hero{min-height:78vh}.present-controls{display:none;position:fixed;right:20px;bottom:18px;z-index:25;gap:8px}.present-mode .present-controls{display:flex}.present-controls button{width:38px;height:38px;border:1px solid #47625a;border-radius:50%;background:#152222;color:var(--lime);cursor:pointer}.notice{padding:11px 13px;border:1px solid #5a5136;border-radius:9px;background:#2c291e;color:#d9cea8;font-size:11px}
+    @media(max-width:980px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;padding:8px 16px;border-right:0;border-bottom:1px solid var(--line)}.side-label,.side-note{display:none}.nav{display:flex;overflow:auto;gap:4px}.nav a{white-space:nowrap;font-size:11px}.nav .num{display:none}.flow{grid-template-columns:1fr 1fr}.flow-node:not(:last-child):after{display:none}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.topbar{padding:10px 13px}.brand small{display:none}.button{padding:7px 9px;font-size:11px}.hero{min-height:390px;padding:26px;border-radius:18px}.stats{gap:8px;margin-bottom:48px}.stat{padding:13px}.stat strong{font-size:21px}.grid2,.grid3,.files{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.section{margin-bottom:52px}.section h2{font-size:26px}main{padding:16px}.code-head{font-size:9px}pre{font-size:10px;padding:13px}.file span{text-align:left}}
+    @media print{body{background:#fff;color:#111}.topbar,.side,.present-controls,.copy{display:none!important}.shell{display:block;max-width:none}.hero,.card,.flow-node,.timeline .body,.stat,.table,.code-card{break-inside:avoid;box-shadow:none;background:#fff;color:#111;border-color:#bbb}.hero{min-height:0}.hero h1,.hero p,.section h2,.card h3,.table td,.timeline .body b{color:#111}.hero p,.section-head p,.card p,.card ul,.table td,.timeline .body span{color:#333}.section{min-height:0;margin:0 0 30px;padding:0!important}.stats{margin:14px 0 28px}.code-card{background:#f6f6f6}.code-head,pre,.code-caption{background:#f6f6f6;color:#111;border-color:#ccc}pre{max-height:none;white-space:pre-wrap;word-break:break-word}.pill{color:#222;background:#fff;border-color:#aaa}.callout,.callout.info,.callout.good{background:#f7f7f7;color:#222;border-color:#777}}
+    :root{color-scheme:light;--bg:#fff;--panel:#fff;--panel2:#f4f4f4;--ink:#171717;--muted:#5f5f5f;--line:#d8d8d8;--mint:#222;--green:#555;--lime:#111;--amber:#555;--red:#333;--blue:#555}
+    body{background:#fff;color:#171717}
+    a{color:#222}
+    .topbar{background:rgba(255,255,255,.96);border-color:#ddd;backdrop-filter:blur(12px)}
+    .brand-mark{border-radius:6px;background:#171717;color:#fff}
+    .button{border-color:#cfcfcf;border-radius:6px;background:#fff;color:#171717}
+    .button:hover{border-color:#555;background:#f3f3f3}
+    .button.primary{background:#171717;border-color:#171717;color:#fff}
+    .side{border-color:#ddd}
+    .side-label{color:#777}
+    .nav a{border-radius:5px;color:#444}
+    .nav a:hover,.nav a.active{background:#eee;color:#111}
+    .nav .num{color:#888}
+    .side-note{border-color:#ddd;border-radius:6px;color:#555}
+    .side-note strong{color:#111}
+    .progress-track{background:#e5e5e5;border-radius:0}
+    .progress-bar{background:#222}
+    .hero{border:1px solid #d6d6d6;border-radius:10px;background:#f5f5f5;box-shadow:none}
+    .hero:after{display:none}
+    .eyebrow{color:#555}
+    .hero h1 span{color:#333}
+    .hero p{color:#444}
+    .pill{border-color:#d0d0d0;border-radius:5px;color:#333;background:#fff}
+    .dot{background:#222}
+    .stat{border-color:#ddd;border-radius:7px;background:#fafafa}
+    .stat strong{color:#111}
+    .stat span{color:#555}
+    .section-num{border-color:#ccc;border-radius:6px;background:#f2f2f2;color:#222}
+    .section-head p{color:#555}
+    .card{border-color:#ddd;border-radius:8px;background:#fafafa}
+    .card p,.card ul{color:#444}
+    .card .icon{border-color:#ddd;border-radius:6px;background:#eee;color:#222}
+    .flow-node{border-color:#ddd;border-radius:7px;background:#fafafa}
+    .flow-node:not(:last-child):after{color:#555}
+    .flow-node b{color:#222}
+    .flow-node .tag{border-radius:4px;background:#eee;color:#333}
+    .callout,.callout.info,.callout.good{border-color:#777;border-radius:0 5px 5px 0;background:#f4f4f4;color:#333}
+    .callout strong{color:#111}
+    .table-wrap{border-color:#ddd;border-radius:7px}
+    .table{background:#fff}
+    .table th{background:#eee;color:#222}
+    .table th,.table td{border-color:#ddd}
+    .table td{color:#333}
+    .mono{color:#333}
+    .code-card{border-color:#ccc;border-radius:7px;background:#f7f7f7}
+    .code-head{border-color:#ddd;background:#eee;color:#555}
+    .code-head .source{color:#333}
+    .copy{border-color:#ccc;border-radius:5px;background:#fff;color:#222}
+    .copy:hover{border-color:#555}
+    pre{background:#fafafa;color:#222}
+    .code-caption{border-color:#ddd;color:#666}
+    .timeline:before{background:#ccc}
+    .timeline .step{border-color:#bbb;background:#f3f3f3;color:#222}
+    .timeline .body{border-color:#ddd;border-radius:6px;background:#fafafa}
+    .timeline .body b{color:#222}
+    .timeline .body span{color:#555}
+    .badge{border-color:#ccc;border-radius:4px;color:#333}
+    .file{border-color:#ddd;border-radius:6px;background:#fafafa}
+    .file code{color:#222}
+    .file span,.footer{color:#666}
+    .footer{border-color:#ddd}
+    .footer strong{color:#222}
+    .source-list code{border-color:#ddd;border-radius:5px;color:#333}
+    .present-controls button{border-color:#bbb;background:#fff;color:#222}
+    .notice{border-color:#ccc;border-radius:6px;background:#f4f4f4;color:#333}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">▧</span><div>PhotoKeep<small>Project presentation · source-based</small></div></div>
+    <div class="top-actions"><button class="button" id="presentBtn" type="button">โหมดพรีเซนต์</button><button class="button" id="printBtn" type="button">พิมพ์ / PDF</button></div>
+  </header>
+  <div class="shell">
+    <aside class="side">
+      <p class="side-label">สารบัญ</p>
+      <nav class="nav" id="nav">
+        <a href="#overview"><span class="num">00</span> ภาพรวม</a><a href="#architecture"><span class="num">01</span> สถาปัตยกรรม</a><a href="#frontend"><span class="num">02</span> หน้าบ้าน</a><a href="#go-api"><span class="num">03</span> Go API / Wails</a><a href="#database"><span class="num">04</span> ฐานข้อมูล</a><a href="#backup"><span class="num">05</span> สำรองภาพ</a><a href="#ai"><span class="num">06</span> วิเคราะห์ AI</a><a href="#gateway"><span class="num">07</span> AI Gateway</a><a href="#search"><span class="num">08</span> ค้นหา</a><a href="#themes"><span class="num">09</span> ธีม</a><a href="#demo"><span class="num">10</span> สาธิต / สถานะ</a>
+      </nav>
+      <div class="side-note"><strong>วิธีใช้หน้านี้</strong>เลื่อนอ่านทีละส่วน · กด “โหมดพรีเซนต์” แล้วใช้ปุ่มลูกศรหรือปุ่ม ← → · พิมพ์เป็น PDF ได้</div>
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    </aside>
+    <main>
+      <section class="hero" id="overview">
+        <div class="eyebrow">Desktop photo library · Go + Wails + Nuxt</div>
+        <h1>รูปอยู่เป็นที่<br><span>ค้นเจอได้จริง</span></h1>
+        <p>PhotoKeep สำรองรูปจากโฟลเดอร์ที่เลือก จัดทำดัชนีข้อมูลภาพไว้ใน SQLite สร้างคำบรรยายและแท็กผ่าน AI Gateway และค้นจากข้อความหรือความหมายได้จากคลังในเครื่อง</p>
+        <div class="hero-meta"><span class="pill"><i class="dot"></i> แอปเดสก์ท็อป macOS / Windows</span><span class="pill">Go 1.26 · Wails v2</span><span class="pill">Nuxt 4 · Vue 3</span><span class="pill">SQLite · GORM · FTS5</span></div>
+      </section>
+      <div class="stats">
+        <div class="stat"><strong>768 px</strong><span>ด้านยาวสูงสุดก่อนส่งภาพวิเคราะห์</span></div><div class="stat"><strong>SHA-256</strong><span>ตรวจไฟล์ซ้ำตอนสำรอง</span></div><div class="stat"><strong>FTS5 + AI</strong><span>ค้นข้อความและ semantic ในเครื่อง</span></div><div class="stat"><strong>1 API</strong><span>แอปเรียก Gateway ที่ /v1/analyze</span></div>
+      </div>
+
+      <section class="section" id="architecture">
+        <div class="section-head"><span class="section-num">01</span><div><h2>สถาปัตยกรรมระบบ</h2><p>แยกส่วน UI, งานในเครื่อง และผู้ให้บริการ AI ให้ดูแลคนละหน้าที่</p></div></div>
+        <div class="flow">
+          <div class="flow-node"><b>Nuxt UI</b><small>หน้าคลังรูป · ตั้งค่า · ธีม</small><span class="tag">Vue 3</span></div>
+          <div class="flow-node"><b>Wails bridge</b><small>ส่งคำสั่งจาก UI เข้า Go</small><span class="tag">app.go</span></div>
+          <div class="flow-node"><b>PhotoKeep Service</b><small>ไฟล์ · งานเบื้องหลัง · ค้นหา</small><span class="tag">Go + GORM</span></div>
+          <div class="flow-node"><b>Local storage</b><small>SQLite · ภาพสำรอง · thumbnail</small><span class="tag">เครื่องผู้ใช้</span></div>
+          <div class="flow-node"><b>AI Gateway</b><small>วิเคราะห์ภาพ / สร้าง vector</small><span class="tag">HTTP</span></div>
+        </div>
+        <div class="callout info"><strong>ขอบเขต API ให้เข้าใจตรงกัน:</strong> ตัวแอป Go ไม่ได้เปิด REST API ให้หน้าเว็บเรียกโดยตรง หน้า Nuxt เรียกเมธอดที่ Wails bind ไว้ ส่วน HTTP API ใช้ระหว่างแอปกับ AI Gateway และบริการ embedding ภายนอก</div>
+        <div class="grid2">
+          <article class="card"><div class="icon">↔</div><h3>เส้นทางคำสั่งในแอป</h3><p>UI เรียก <code class="mono">window.go.main.App</code> → เมธอดใน <code class="mono">app.go</code> → <code class="mono">Service</code> → SQLite หรือระบบไฟล์</p></article>
+          <article class="card"><div class="icon">⇧</div><h3>เส้นทาง AI</h3><p>Go ย่อภาพและส่ง multipart ให้ Gateway; Gateway เลือก provider/key แล้วส่งคำตอบกลับมาให้แอปบันทึก caption กับ tags</p></article>
+        </div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">main.go · เริ่ม Wails และ bind App ให้ UI</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>app, err := NewApp("")
+if err != nil {
+    log.Fatal(err)
+}
+defer app.close()
+
+err = wails.Run(&amp;options.App{
+    Title: "PhotoKeep — สำรองรูปภาพ",
+    Width: 1180, Height: 800, MinWidth: 360, MinHeight: 520,
+    AssetServer: &amp;assetserver.Options{Assets: assets},
+    OnStartup: app.Startup,
+    Bind: []interface{}{app},
+})</code></pre><div class="code-caption">โค้ดตัดมาเฉพาะส่วนตั้งค่าแอปจริง; Wails สร้าง JavaScript bindings สำหรับเมธอดบน App</div></div>
+      </section>
+
+      <section class="section" id="frontend">
+        <div class="section-head"><span class="section-num">02</span><div><h2>หน้าบ้าน — Nuxt / Vue</h2><p>หน้าหลักประกอบจาก component แยกตามหน้าที่ ส่วน PhotoKeepApp.vue ทำหน้าที่คุม state และประสาน Wails bridge</p></div></div>
+        <div class="grid3">
+          <article class="card"><div class="icon">▦</div><h3>Gallery</h3><p>ค้นหา ดูรูปแบบแบ่งหน้า thumbnail queue และแสดงแถบเลื่อนตำแหน่งภาพ</p></article>
+          <article class="card"><div class="icon">⚙</div><h3>Settings</h3><p>ตั้งค่าโฟลเดอร์ต้นทาง/ปลายทาง และติดตั้งหรือจัดการชุดสี</p></article>
+          <article class="card"><div class="icon">✦</div><h3>Progress</h3><p>รับ progress event งานสำรองและวิเคราะห์ พร้อมหยุด ทำต่อ และดูประวัติ error</p></article>
+        </div>
+        <div class="files" style="margin-top:14px">
+          <div class="file"><code>frontend/app/components/PhotoKeepApp.vue</code><span>state + Wails calls</span></div><div class="file"><code>frontend/app/components/gallery/GalleryPanel.vue</code><span>search + scroll + thumbnails</span></div>
+          <div class="file"><code>frontend/app/components/backup/</code><span>setup + progress dialog</span></div><div class="file"><code>frontend/app/components/settings/</code><span>settings + theme import</span></div>
+          <div class="file"><code>frontend/app/composables/usePhotoKeepTheme.ts</code><span>ใช้/บันทึก theme</span></div><div class="file"><code>frontend/app/assets/css/</code><span>tokens + components styles</span></div>
+        </div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">PhotoKeepApp.vue · ขนาดหน้าและเรียก thumbnail จาก binding</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>const api = () =&gt; (window as any).go?.main?.App
+const PHOTO_PAGE_SIZE = 96
+const THUMBNAIL_BATCH_SIZE = 8
+const THUMBNAIL_BATCH_CONCURRENCY = 3
+
+const result = await api().SearchPage(
+  searchQuery, '', photosOffset.value, PHOTO_PAGE_SIZE,
+)
+photos.value = result.photos || []
+searchTotal.value = result.total || 0</code></pre><div class="code-caption">หน้าเว็บขอผลค้นหาเป็นหน้า ๆ; ภาพย่อเรียกแยกเป็น batch ขนาด 8 และมี batch ทำงานพร้อมกัน 3 ชุด</div></div>
+      </section>
+
+      <section class="section" id="go-api">
+        <div class="section-head"><span class="section-num">03</span><div><h2>Go API — Wails bridge และ HTTP</h2><p>แยก “เมธอดของแอป” ออกจาก “HTTP API ของ Gateway” เพื่ออธิบาย interface ได้ชัดเจน</p></div></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>ช่องทาง</th><th>ตัวอย่าง</th><th>หน้าที่</th></tr></thead><tbody>
+          <tr><td>Wails binding</td><td><code>GetState, Backup, SearchPage, PreviewThumbnails</code></td><td>Nuxt เรียก Go ในโปรเซสเดียวกันผ่าน generated bindings</td></tr>
+          <tr><td>Gateway HTTP</td><td><code>GET /health</code><br><code>POST /v1/analyze</code></td><td>ตรวจ readiness และส่งรูปเพื่อวิเคราะห์</td></tr>
+          <tr><td>Embedding HTTP</td><td><code>POST /v1/embed/text</code><br><code>POST /v1/embed/image</code></td><td>deployment ปัจจุบันใช้สร้างเวกเตอร์; client อยู่ใน <code>internal/photokeep/embeddings.go</code> แต่ endpoint ยังไม่มีใน gateway source ชุดนี้</td></tr>
+          <tr><td>Open VSX</td><td><code>SearchOpenVSXThemes</code><br><code>FetchOpenVSXThemePackage</code></td><td>ค้นแพ็กเกจธีมและรับข้อมูลไฟล์สีที่ผ่านการตรวจ</td></tr>
+        </tbody></table></div>
+        <div class="grid2" style="margin-top:14px">
+          <article class="card"><h3>กลุ่มเมธอดที่ UI เรียก</h3><ul><li>สถานะและโฟลเดอร์: <code>GetState</code>, <code>SaveBackupSettings</code>, <code>PickDirectory</code></li><li>คลังภาพ: <code>SearchPage</code>, <code>PreviewThumbnails</code>, <code>UpdatePhoto</code></li><li>AI: <code>StartImageAIAnalysis</code>, <code>StopImageAIAnalysis</code>, <code>ContinueImageAIAnalysis</code></li></ul></article>
+          <article class="card"><h3>ตำแหน่ง source</h3><ul><li>Wails entrypoint: <code>main.go</code></li><li>Bridge / orchestration: <code>app.go</code></li><li>Domain + persistence: <code>internal/photokeep/</code></li><li>HTTP server ของ AI: <code>services/ai-gateway/internal/gateway/server.go</code></li></ul></article>
+        </div>
+      </section>
+
+      <section class="section" id="database">
+        <div class="section-head"><span class="section-num">04</span><div><h2>ฐานข้อมูลและข้อมูลภาพ</h2><p>SQLite อยู่ในโฟลเดอร์ config ของผู้ใช้; GORM ใช้ migrate schema เมื่อเปิดแอป</p></div></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>ตาราง / index</th><th>ข้อมูลหลัก</th><th>นำไปใช้</th></tr></thead><tbody>
+          <tr><td><code>settings</code></td><td>source, dest, keep_original</td><td>จำโฟลเดอร์และนโยบายเก็บต้นฉบับ</td></tr>
+          <tr><td><code>files</code></td><td>dest, filename, status</td><td>ประวัติไฟล์สำรองตามโครงสร้างเดิม</td></tr>
+          <tr><td><code>photos</code></td><td>path, SHA-256, ขนาด/มิติ, caption, tags, AI status, embedding</td><td>คลังรูป, คิววิเคราะห์, ค้นหา และ vector index</td></tr>
+          <tr><td><code>image_ai_analysis_jobs</code></td><td>รายการ photo IDs, status, total, completed, failed, duration</td><td>กู้คืนงาน, progress, pause/resume และประวัติงาน</td></tr>
+          <tr><td><code>photo_search</code> (FTS5)</td><td>filename, description, tags</td><td>ดัชนีข้อความ local สำหรับค้นเร็ว</td></tr>
+        </tbody></table></div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">internal/photokeep/service.go · SQLite และ FTS5</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>sqlDB.SetMaxOpenConns(1)
+if err := db.Exec("PRAGMA busy_timeout = 5000").Error; err != nil {
+    return nil, err
+}
+if err := db.AutoMigrate(
+    &amp;FileRecord{}, &amp;Setting{}, &amp;Photo{}, &amp;ImageAIAnalysisJob{},
+).Error; err != nil {
+    return nil, err
+}
+
+CREATE VIRTUAL TABLE IF NOT EXISTS photo_search
+USING fts5(filename, description, tags,
+  content='photos', content_rowid='id', tokenize='trigram')</code></pre><div class="code-caption">SQLite ใช้ connection เดียวใน service ปัจจุบัน; การเพิ่ม write concurrency จำนวนมากอาจเพิ่มการรอ lock</div></div>
+      </section>
+
+      <section class="section" id="backup">
+        <div class="section-head"><span class="section-num">05</span><div><h2>สำรองภาพ — ขั้นตอนและการป้องกันข้อมูล</h2><p>สำรวจไฟล์ → กรองไฟล์ที่รองรับ → คัดลอกแบบ atomic → ตรวจ hash → บันทึกข้อมูล → สร้าง thumbnail</p></div></div>
+        <ol class="timeline">
+          <li><span class="step">01</span><div class="body"><b>ตรวจ source/destination</b><span>ต้องเป็นโฟลเดอร์ที่มีอยู่และห้ามซ้อนกัน เพื่อป้องกันวงจรคัดลอกหรือลบผิดที่</span></div></li>
+          <li><span class="step">02</span><div class="body"><b>สแกน recursively และตัดไฟล์ซ่อน</b><span>รองรับ jpg/jpeg/png/gif/webp/bmp/tif/tiff; ข้ามชื่อขึ้นต้นด้วยจุด เช่น .DS_Store</span></div></li>
+          <li><span class="step">03</span><div class="body"><b>คัดลอกด้วย worker pool</b><span>สูงสุด 4 worker ตาม GOMAXPROCS; เขียน temp file ก่อน rename และตรวจ byte count</span></div></li>
+          <li><span class="step">04</span><div class="body"><b>ตรวจ SHA-256 และรายการเดิม</b><span>ถ้า hash ตรงกันจะข้าม; ถ้าชื่อซ้ำแต่เนื้อหาไม่ตรงจะตั้งชื่อใหม่ต่อท้าย (1), (2), …</span></div></li>
+          <li><span class="step">05</span><div class="body"><b>เก็บต้นฉบับหรือย้าย</b><span>ค่าเริ่มต้น keep original = true; ถ้าปิด ระบบบันทึกสถานะย้ายก่อนลบต้นฉบับ</span></div></li>
+          <li><span class="step">06</span><div class="body"><b>อัปเดต progress และเริ่มงานถัดไป</b><span>เมื่อ backup ผ่าน ระบบจัดคิว AI analysis และเริ่มทำ embedding index</span></div></li>
+        </ol>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">internal/photokeep/backup.go · กรอง hidden files และชนิดรูป</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>if path != state.Source &amp;&amp; strings.HasPrefix(entry.Name(), ".") {
+    if entry.IsDir() {
+        return filepath.SkipDir
+    }
+    return nil
+}
+if entry.IsDir() || !entry.Type().IsRegular() ||
+   !imageExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
+    return nil
+}</code></pre><div class="code-caption">โค้ดเดียวกับ source ปัจจุบัน; file hash ถูกคำนวณระหว่าง copy เพื่อไม่ต้องอ่านไฟล์ซ้ำรอบหนึ่ง</div></div>
+      </section>
+
+      <section class="section" id="ai">
+        <div class="section-head"><span class="section-num">06</span><div><h2>งานวิเคราะห์ภาพด้วย AI</h2><p>เก็บงานเป็น job ใน SQLite; แสดงสถานะรายภาพและให้ retry เฉพาะรายการที่ต้องทำต่อ</p></div></div>
+        <div class="grid2">
+          <article class="card"><div class="icon">✦</div><h3>ลำดับทำงาน</h3><ul><li>เรียก <code>GET /health</code> ก่อนเริ่ม job</li><li>บันทึก job และตั้งรูปเป็น pending</li><li>อ่าน concurrency จาก health ของ Gateway</li><li>ส่งภาพแต่ละใบด้วย multipart field <code>file</code></li><li>บันทึก caption, tags, model และสถานะลง SQLite</li><li>429 จะ defer คิว; error ชั่วคราว retry ตาม Retry-After/backoff</li></ul></article>
+          <article class="card"><div class="icon">⇲</div><h3>ปรับรูปก่อนส่ง</h3><ul><li>ขนาดต้นฉบับก่อนเตรียมได้สูงสุด 100 MB</li><li>ย่อด้านยาวสุดไม่เกิน 768 px</li><li>เข้ารหัส JPEG quality 82</li><li>ไฟล์ payload สูงสุด 12 MB</li><li>ไฟล์ชั่วคราวถูกลบเมื่อคำขอจบ</li></ul></article>
+        </div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">app.go · worker count ปัจจุบันอ่านจาก Gateway health</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>concurrency, concurrencyErr := client.Concurrency(concurrencyCtx)
+concurrencyCancel()
+if concurrencyErr != nil {
+    concurrency = 1
+}
+workers := min(max(1, concurrency), len(inputs))
+for range workers {
+    go func() {
+        for input := range work {
+            result, err := client.Analyze(ctx, input.Path)
+            if ctx.Err() != nil {
+                continue
+            }
+            if err == nil {
+                err = photokeep.ValidateThaiAnalysis(result)
+            }
+            results &lt;- outcome{input: input, result: result, err: err}
+        }
+    }()
+}</code></pre><div class="code-caption">ส่วนคำนวณจำนวน worker ตรงกับ source; body ใน loop ย่อให้เห็น flow เท่านั้น</div></div>
+        <div class="callout"><strong>ผลต่อเวลา:</strong> เพิ่ม worker ในแอปเกินค่า concurrency ของ Gateway ไม่ได้เพิ่มจำนวน inference จริง แต่อาจสร้างคิว HTTP และแย่ง SQLite write lock จึงต้องปรับและ benchmark เพดานที่ Gateway ด้วย</div>
+        <div class="callout info"><strong>เรื่อง cache ที่ควรพูดให้ถูก:</strong> ตอนนี้ SHA-256 ใช้ตรวจรูปซ้ำในงานสำรอง ยังไม่มี cache ผลวิเคราะห์ AI ที่ข้ามการเรียก Gateway ตาม image hash; ถ้าจะเพิ่ม ต้องผูก cache key กับ hash, provider/model และ prompt version และเก็บเฉพาะผลที่ validation ผ่าน</div>
+      </section>
+
+      <section class="section" id="gateway">
+        <div class="section-head"><span class="section-num">07</span><div><h2>AI Gateway — API กลางและผู้ให้บริการ</h2><p>แยก provider keys ออกจาก desktop app; เปลี่ยน provider และจำนวน worker ผ่าน environment ฝั่ง Gateway</p></div></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>HTTP route</th><th>Request</th><th>Response / หน้าที่</th></tr></thead><tbody>
+          <tr><td><code>GET /health</code></td><td>ไม่ต้องส่ง body</td><td>ตรวจ provider พร้อมทำงาน; แอปอ่านค่า concurrency จาก response</td></tr>
+          <tr><td><code>POST /v1/analyze</code></td><td>multipart <code>file</code></td><td>caption + tags + model + success; จำกัดภาพ 12 MB ใน source</td></tr>
+          <tr><td><code>POST /v1/embed/text</code></td><td>JSON <code>{"text":"..."}</code></td><td>embedding ของคำค้นเพื่อ semantic search</td></tr>
+          <tr><td><code>POST /v1/embed/image</code></td><td>multipart <code>file</code></td><td>embedding ของภาพเพื่อจัดทำดัชนี</td></tr>
+        </tbody></table></div>
+        <div class="grid2" style="margin-top:14px">
+          <article class="card"><h3>Provider ที่ source รองรับ</h3><ul><li><strong>xKiro</strong>: หมุนเวียน API keys; ค่า concurrency เริ่มตามจำนวน key</li><li><strong>Cloudflare + ThaiLLM</strong>: Cloudflare สร้างคำบรรยายภาพ, ThaiLLM สร้างผลไทย/แท็ก</li><li><code>PHOTOKEEP_GATEWAY_CONCURRENCY</code>: override ค่าได้ 1–128</li></ul></article>
+          <article class="card"><h3>ที่เก็บ configuration</h3><ul><li>Gateway อ่านค่าใน <code>gateway.env</code> ตอนเริ่ม process</li><li>เลือก provider ด้วย <code>PHOTOKEEP_GATEWAY_PROVIDER</code></li><li>ใส่ keys เฉพาะบนเครื่อง Gateway</li><li>restart Gateway หลังเปลี่ยนค่า</li></ul></article>
+        </div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">services/ai-gateway/internal/gateway/provider.go · เลือก provider / concurrency</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>switch provider {
+case "xkiro":
+    analyzer, err = NewXKiroKeyPool(keys, os.Getenv("XKIRO_MODEL"))
+    defaultConcurrency = pool.KeyCount()
+case "cloudflare-thaillm", "cloudflare/thaillm":
+    analyzer, err = NewCloudflareThaiLLMAnalyzer(accounts, keys, model)
+    defaultConcurrency = pool.DefaultConcurrency()
+}
+
+if value := strings.TrimSpace(os.Getenv("PHOTOKEEP_GATEWAY_CONCURRENCY")); value != "" {
+    parsed, parseErr := strconv.Atoi(value)
+    if parseErr != nil || parsed &lt; 1 || parsed &gt; 128 {
+        return nil, 0, errors.New("PHOTOKEEP_GATEWAY_CONCURRENCY ต้องอยู่ระหว่าง 1 ถึง 128")
+    }
+    defaultConcurrency = parsed
+}</code></pre><div class="code-caption">ย่อจาก source; error return ใน source มีข้อความตรวจค่าที่ผิดรูปแบบ</div></div>
+        <div class="callout info"><strong>ความต่างระหว่าง source กับ deployment:</strong> Gateway source ใน repo ลงทะเบียนแค่ <code>/health</code> และ <code>/v1/analyze</code>; local source ตอบ health ด้วย <code>success/status</code> แต่ deployment ที่ตรวจใน session ก่อนหน้ารายงาน <code>concurrency=9</code>, embed concurrency 6 และ Jina Embeddings v4 พร้อมมี <code>/v1/embed/*</code> ดังนั้น endpoint embedding และ health schema มาจาก deployment/companion ที่ยังไม่อยู่ใน source ชุดนี้ ต้องยืนยัน revision และส่วนประกอบก่อน deploy จาก repo</div>
+      </section>
+
+      <section class="section" id="search">
+        <div class="section-head"><span class="section-num">08</span><div><h2>ระบบค้นหา — ข้อความ + ความหมาย</h2><p>ค้นหาในเครื่องเป็นหลัก; เรียก embedding API เฉพาะเวกเตอร์ของข้อความค้นและตอนสร้างดัชนีภาพ</p></div></div>
+        <div class="flow">
+          <div class="flow-node"><b>1 · รับ query</b><small>คำค้น / tag / offset / limit</small></div><div class="flow-node"><b>2 · lexical</b><small>FTS5 + Thai tokenizer จัดอันดับข้อความ</small></div><div class="flow-node"><b>3 · text vector</b><small>ใช้ cache ใน memory; timeout 10s</small></div><div class="flow-node"><b>4 · cosine</b><small>เทียบกับ image vectors ใน SQLite</small></div><div class="flow-node"><b>5 · fuse</b><small>รวม lexical + semantic แล้วแบ่งหน้า</small></div>
+        </div>
+        <div class="grid2" style="margin-top:14px">
+          <article class="card"><h3>Lexical search</h3><p>SQLite FTS5 trigram หา filename/caption/tags; ตัวตัดคำไทยสร้าง token; ให้คะแนน tag มากกว่าชื่อไฟล์และคำอธิบาย; คำตรงทั้งวลีได้คะแนนเพิ่ม</p></article>
+          <article class="card"><h3>Semantic search</h3><p>สร้างเวกเตอร์ query จาก embedding service แล้วคำนวณ cosine similarity ในเครื่อง เฉพาะรูปที่มี embedding model เดียวกับ query; ใช้ threshold และ margin จำกัดผลรบกวน</p></article>
+          <article class="card"><h3>Fallback</h3><p>ถ้ายังไม่มี image embeddings, service ไม่พร้อม หรือ query embedding ล้มเหลว จะคืน lexical results แทน; ผลค้นยังใช้งานได้โดยไม่รอ AI เกิน timeout</p></article>
+          <article class="card"><h3>ดัชนีภาพ</h3><p>หลังสำรองภาพ ระบบอ่าน pending embedding; ย่อภาพก่อนส่ง; บันทึก vector เป็น binary float32 พร้อมชื่อโมเดลใน row ของ photo</p></article>
+        </div>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">internal/photokeep/embeddings.go · cosine score ในเครื่อง</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>func cosineSimilarity(left, right []float32) float64 {
+    if len(left) == 0 || len(left) != len(right) {
+        return -1
+    }
+    var dot, leftNorm, rightNorm float64
+    for i := range left {
+        a, b := float64(left[i]), float64(right[i])
+        dot += a * b
+        leftNorm += a * a
+        rightNorm += b * b
+    }
+    if leftNorm == 0 || rightNorm == 0 {
+        return -1
+    }
+    return dot / math.Sqrt(leftNorm*rightNorm)
+}</code></pre><div class="code-caption">ค้น semantic ไม่ได้ส่งภาพทุกใบไปให้ AI ใหม่; ใช้เวกเตอร์ที่บันทึกไว้เทียบ cosine</div></div>
+        <div class="callout"><strong>ข้อควรพูดตรง ๆ:</strong> คุณภาพ semantic ขึ้นกับโมเดล embedding และภาษาที่โมเดลเข้าใจ; เมื่อเปลี่ยน embedding model ต้องสร้าง vector ของรูปใหม่ให้เป็น model เดียวกัน</div>
+      </section>
+
+      <section class="section" id="themes">
+        <div class="section-head"><span class="section-num">09</span><div><h2>ระบบนำเข้า Theme จาก Open VSX</h2><p>ดึงเฉพาะสี UI ที่รองรับ แปลงเป็น palette ของ PhotoKeep แล้วเก็บไว้ใน browser localStorage</p></div></div>
+        <ol class="timeline">
+          <li><span class="step">A</span><div class="body"><b>ค้นหา package หมวด Themes</b><span>Go backend ตรวจ namespace/name/version และตรวจว่า manifest มีสี UI theme ที่รองรับ</span></div></li>
+          <li><span class="step">B</span><div class="body"><b>ตรวจ package และ checksum</b><span>ตรวจ SHA-256 ของ VSIX ก่อนอ่าน zip; จำกัดขนาดและจำนวนไฟล์; เลือกอ่าน manifest กับไฟล์ JSON/JSONC ของ theme เท่านั้น</span></div></li>
+          <li><span class="step">C</span><div class="body"><b>ตรวจข้อมูลและสี</b><span>Frontend ใช้ Zod ตรวจ schema, jsonc-parser อ่าน JSONC, guard include path ป้องกันออกนอก package แล้วแปลง editor colors เป็น palette</span></div></li>
+          <li><span class="step">D</span><div class="body"><b>บันทึกและใช้</b><span>บันทึก theme ที่ผ่าน validation ลง localStorage; เลือกใช้/ลบได้ภายหลัง โดยไม่ติดตั้งหรือรัน extension</span></div></li>
+        </ol>
+        <div class="code-card" style="margin-top:14px"><div class="code-head"><span class="source">internal/photokeep/openvsx_themes.go · ตรวจ SHA-256 ก่อนแตก VSIX</span><button class="copy" type="button">คัดลอกโค้ด</button></div><pre><code>vsix, err := openVSXGet(ctx, meta.Files.Download, 100&lt;&lt;20)
+if err != nil {
+    return OpenVSXThemePackage{}, err
+}
+if err := verifyOpenVSXHash(vsix, expected); err != nil {
+    return OpenVSXThemePackage{}, err
+}
+files, err := readOpenVSXThemeFiles(vsix)</code></pre><div class="code-caption">หลัง verify แล้วจึงอ่านไฟล์จำเป็นจาก VSIX; ไม่มีการ execute extension</div></div>
+      </section>
+
+      <section class="section" id="demo">
+        <div class="section-head"><span class="section-num">10</span><div><h2>แผนสาธิตและสถานะปัจจุบัน</h2><p>ใช้ flow จริงที่ทำซ้ำได้ หลีกเลี่ยงการอ้าง benchmark ที่ยังไม่มีการทดสอบ end-to-end</p></div></div>
+        <div class="grid2">
+          <article class="card"><h3>สาธิต 6–8 นาที</h3><ul><li><strong>นาที 1:</strong> ตั้ง source / destination และอธิบายการเก็บต้นฉบับ</li><li><strong>นาที 2:</strong> สำรองรูป; แสดง progress, skip ซ้ำ และไฟล์ที่คัดลอก</li><li><strong>นาที 3:</strong> เปิด Gallery, เลื่อน, thumbnail และรายละเอียดภาพ</li><li><strong>นาที 4:</strong> แก้ caption/tag แล้วค้นด้วยคำไทย</li><li><strong>นาที 5:</strong> เริ่ม AI job, แสดง status และ pause/resume/retry</li><li><strong>นาที 6:</strong> อธิบาย Gateway แยกคีย์และ provider</li><li><strong>นาที 7–8:</strong> semantic search และนำเข้า theme</li></ul></article>
+          <article class="card"><h3>ก่อนวันนำเสนอ</h3><ul><li>เตรียมโฟลเดอร์ demo สำเนา ไม่ใช้รูปส่วนตัว</li><li>ตรวจ `.env` endpoint กับ `/health` ของ Gateway</li><li>ยืนยัน model + concurrency จาก health ล่าสุด</li><li>รัน `go test ./...`, `npm run typecheck`, `npm run generate`</li><li>ตรวจว่า embedding index ครบก่อนสาธิต semantic</li><li>เตรียมภาพ/คำค้นสำรองกรณีเครือข่ายหรือ AI ใช้ไม่ได้</li><li>ไม่แสดง API keys หรือไฟล์ `gateway.env` บนจอ</li></ul></article>
+        </div>
+        <h3 style="margin:24px 0 10px">พูดถึงความเร็วอย่างไร</h3>
+        <div class="notice">ตัวเลขที่เห็นก่อนหน้า 369/1,000 ใน 2 นาที 49 วินาที คิดเป็นราว 131 ภาพ/นาที หรือประมาณ 7 นาที 38 วินาทีต่อ 1,000 ภาพ หากอัตราคงที่ ตัวเลขนี้เป็นการคำนวณจาก progress ณ ตอนนั้น ไม่ใช่ benchmark ครบ 1,000 ภาพ เป้าหมาย 2–3 นาทีต้องได้ 5.6–8.3 ภาพ/วินาที และต้องทดสอบกับ Gateway, provider quota และฐานข้อมูลจริงก่อนกล่าวว่าผ่าน</div>
+        <div class="callout info"><strong>ความต่างของ concurrency:</strong> แอปใช้จำนวนที่อ่านจาก Gateway health; หากตั้ง worker ฝั่งแอปมากกว่า Gateway จะได้เพียงคำขอรอ ไม่ได้เพิ่มจำนวน inference ที่กำลังทำจริง ควร benchmark เพิ่มทีละระดับและดู 429, p50/p95 latency และ SQLite write delay</div>
+        <h3 style="margin:24px 0 10px">แผนผังไฟล์ source</h3>
+        <div class="files">
+          <div class="file"><code>main.go</code><span>Wails entrypoint</span></div><div class="file"><code>app.go</code><span>bridge + orchestration</span></div>
+          <div class="file"><code>internal/photokeep/backup.go</code><span>สำรอง + hash + progress</span></div><div class="file"><code>internal/photokeep/image_ai.go</code><span>HTTP client + resize + retry</span></div>
+          <div class="file"><code>internal/photokeep/image_ai_jobs.go</code><span>job state + persist result</span></div><div class="file"><code>internal/photokeep/photos_search.go</code><span>lexical ranking + pagination</span></div>
+          <div class="file"><code>internal/photokeep/embeddings.go</code><span>vector persistence + cosine</span></div><div class="file"><code>services/ai-gateway/internal/gateway/</code><span>HTTP + providers</span></div>
+          <div class="file"><code>frontend/app/components/PhotoKeepApp.vue</code><span>UI state / binding calls</span></div><div class="file"><code>frontend/app/components/gallery/</code><span>gallery experience</span></div>
+        </div>
+      </section>
+      <footer class="footer"><strong>PhotoKeep · presenter notes</strong><br>สร้างจาก source ที่อยู่ใน repo ณ 24 ต.ค. 2569; snippets แสดงโค้ดจริงหรือ excerpt ที่ระบุว่าเป็น excerpt; deployment และผล runtime อาจเปลี่ยนได้ ควรตรวจ health/config ก่อนนำเสนอ</footer>
+    </main>
+  </div>
+  <div class="present-controls"><button type="button" id="prevSection" aria-label="ก่อนหน้า">←</button><button type="button" id="nextSection" aria-label="ถัดไป">→</button><button type="button" id="exitPresent" aria-label="ออกจากโหมดพรีเซนต์">×</button></div>
+  <script>
+    const sections=[...document.querySelectorAll('main > section')]
+    const navLinks=[...document.querySelectorAll('.nav a')]
+    const progressBar=document.getElementById('progressBar')
+    const presentBtn=document.getElementById('presentBtn')
+    let current=0
+    const setCurrent=index=>{current=Math.max(0,Math.min(sections.length-1,index));sections[current].scrollIntoView({behavior:'smooth',block:'start'})}
+    presentBtn.addEventListener('click',()=>{document.body.classList.toggle('present-mode');presentBtn.textContent=document.body.classList.contains('present-mode')?'ออกจากโหมดพรีเซนต์':'โหมดพรีเซนต์';setCurrent(current)})
+    document.getElementById('exitPresent').addEventListener('click',()=>{document.body.classList.remove('present-mode');presentBtn.textContent='โหมดพรีเซนต์'})
+    document.getElementById('prevSection').addEventListener('click',()=>setCurrent(current-1))
+    document.getElementById('nextSection').addEventListener('click',()=>setCurrent(current+1))
+    document.getElementById('printBtn').addEventListener('click',()=>window.print())
+    document.addEventListener('keydown',event=>{
+      if(!document.body.classList.contains('present-mode'))return
+      if(event.key==='ArrowRight'||event.key==='PageDown'){event.preventDefault();setCurrent(current+1)}
+      if(event.key==='ArrowLeft'||event.key==='PageUp'){event.preventDefault();setCurrent(current-1)}
+      if(event.key==='Escape'){document.body.classList.remove('present-mode');presentBtn.textContent='โหมดพรีเซนต์'}
+    })
+    document.querySelectorAll('.copy').forEach(button=>button.addEventListener('click',async()=>{
+      const code=button.closest('.code-card').querySelector('code').innerText
+      try{await navigator.clipboard.writeText(code);button.textContent='คัดลอกแล้ว';setTimeout(()=>button.textContent='คัดลอกโค้ด',1200)}catch{button.textContent='คัดลอกไม่ได้'}
+    }))
+    const observer=new IntersectionObserver(entries=>{
+      for(const entry of entries){if(entry.isIntersecting){current=sections.indexOf(entry.target);navLinks.forEach(link=>link.classList.toggle('active',link.hash==='#'+entry.target.id))}}
+    },{rootMargin:'-22% 0px -68% 0px'})
+    sections.forEach(section=>observer.observe(section))
+    addEventListener('scroll',()=>{const max=document.documentElement.scrollHeight-innerHeight;progressBar.style.width=(max>0?scrollY/max*100:0)+'%'},{passive:true})
+  </script>
+</body>
+</html>
