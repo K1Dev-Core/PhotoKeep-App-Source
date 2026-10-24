@@ -63,6 +63,10 @@ func NewService(dbPath string) (*Service, error) {
 }
 
 func ensurePhotoSearchIndex(db *gorm.DB) error {
+	var indexExists int64
+	if err := db.Raw("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'photo_search'").Scan(&indexExists).Error; err != nil {
+		return fmt.Errorf("check local photo search index: %w", err)
+	}
 	statements := []string{
 		`CREATE VIRTUAL TABLE IF NOT EXISTS photo_search USING fts5(filename, description, tags, content='photos', content_rowid='id', tokenize='trigram')`,
 		`CREATE TRIGGER IF NOT EXISTS photos_search_ai AFTER INSERT ON photos BEGIN
@@ -75,11 +79,15 @@ func ensurePhotoSearchIndex(db *gorm.DB) error {
 			INSERT INTO photo_search(photo_search, rowid, filename, description, tags) VALUES ('delete', old.id, old.filename, old.description, old.tags);
 			INSERT INTO photo_search(rowid, filename, description, tags) VALUES (new.id, new.filename, new.description, new.tags);
 		END`,
-		`INSERT INTO photo_search(photo_search) VALUES ('rebuild')`,
 	}
 	for _, statement := range statements {
 		if err := db.Exec(statement).Error; err != nil {
 			return fmt.Errorf("initialize local photo search index: %w", err)
+		}
+	}
+	if indexExists == 0 {
+		if err := db.Exec(`INSERT INTO photo_search(photo_search) VALUES ('rebuild')`).Error; err != nil {
+			return fmt.Errorf("build local photo search index: %w", err)
 		}
 	}
 	return nil

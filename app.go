@@ -162,8 +162,6 @@ func (a *App) SearchPage(query, tag string, offset, limit int) (photokeep.Search
 
 func (a *App) searchPage(query, tag string, offset, limit int) (photokeep.SearchResult, error) {
 	query = strings.TrimSpace(query)
-	requestCtx, finishSearch := a.beginSearchRequest()
-	defer finishSearch()
 	if query == "" {
 		return a.service.SearchPage(query, tag, offset, limit)
 	}
@@ -171,10 +169,15 @@ func (a *App) searchPage(query, tag string, offset, limit int) (photokeep.Search
 	if err != nil {
 		return photokeep.SearchResult{}, err
 	}
+	if lexical.Total > 0 {
+		return pageSearchResult(lexical, offset, limit), nil
+	}
 	hasEmbeddings, err := a.service.HasPhotoEmbeddings()
 	if err != nil || !hasEmbeddings {
 		return pageSearchResult(lexical, offset, limit), nil
 	}
+	requestCtx, finishSearch := a.beginSearchRequest()
+	defer finishSearch()
 	client, err := photokeep.NewManagedEmbeddingClient(a.managedAIURL())
 	if err != nil {
 		return pageSearchResult(lexical, offset, limit), nil
@@ -195,7 +198,7 @@ func (a *App) beginSearchRequest() (context.Context, func()) {
 	if parent == nil {
 		parent = context.Background()
 	}
-	requestCtx, cancel := context.WithTimeout(parent, 10*time.Second)
+	requestCtx, cancel := context.WithTimeout(parent, 5*time.Second)
 	requestID := a.searchRequestSeq.Add(1)
 	a.searchRequestMu.Lock()
 	if a.searchRequestCancel != nil {
@@ -215,23 +218,14 @@ func (a *App) beginSearchRequest() (context.Context, func()) {
 }
 
 func (a *App) queryEmbedding(ctx context.Context, query string, client *photokeep.ManagedEmbeddingClient) (photokeep.EmbeddingVector, error) {
+	query = strings.ToLower(strings.TrimSpace(query))
 	a.queryEmbeddingMu.Lock()
 	if cached, exists := a.queryEmbeddings[query]; exists {
 		a.queryEmbeddingMu.Unlock()
 		return cached, nil
 	}
 	a.queryEmbeddingMu.Unlock()
-	var vector photokeep.EmbeddingVector
-	var err error
-	for attempt := 0; attempt < 2; attempt++ {
-		vector, err = client.EmbedText(ctx, query)
-		if err == nil {
-			break
-		}
-		if attempt < 1 && !waitForSearchEmbeddingRetry(ctx) {
-			return photokeep.EmbeddingVector{}, ctx.Err()
-		}
-	}
+	vector, err := client.EmbedText(ctx, query)
 	if err != nil {
 		return photokeep.EmbeddingVector{}, err
 	}
@@ -248,17 +242,6 @@ func (a *App) queryEmbedding(ctx context.Context, query string, client *photokee
 	a.queryEmbeddings[query] = vector
 	a.queryEmbeddingMu.Unlock()
 	return vector, nil
-}
-
-func waitForSearchEmbeddingRetry(ctx context.Context) bool {
-	timer := time.NewTimer(300 * time.Millisecond)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return false
-	case <-timer.C:
-		return true
-	}
 }
 
 func waitForEmbeddingRetry(ctx context.Context, attempt int) bool {
