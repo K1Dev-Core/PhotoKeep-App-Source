@@ -8,4 +8,4 @@ Set `PHOTOKEEP_GATEWAY_PROVIDER=xkiro` and `XKIRO_API_KEYS` in `.env.gateway`, t
 
 The service reduces each uploaded image to a JPEG no larger than 512 pixels before sending it to the xKiro OpenAI-compatible chat API. It requests a Thai caption and dynamic Thai tags, removes non-Thai or duplicate tags, and rejects captions without Thai text. A successful response uses the existing PhotoKeep analysis schema.
 
-Requests are paced at 600 ms apart by default. `XKIRO_MIN_INTERVAL_MS` can adjust this on the gateway; a 429 pauses sending briefly and increases spacing. The desktop queue stops feeding new images on 429 and resumes pending work after the provider's delay.
+Requests are paced at 600 ms apart per key by default. `XKIRO_MIN_INTERVAL_MS` can adjust this on the gateway. On an IP-scoped 429, the gateway pauses xKiro and routes new images to `https://vision.k1god.com/v1/analyze` until `Retry-After` expires, then probes xKiro once. The gateway defaults to concurrency 64; provider limits still apply.

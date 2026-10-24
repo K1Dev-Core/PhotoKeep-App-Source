@@ -20,8 +20,8 @@ func NewAnalyzerFromEnv() (Analyzer, int, error) {
 	case "xkiro":
 		keys := firstConfigured("XKIRO_API_KEYS", "XKIRO_API_KEY")
 		analyzer, err = NewXKiroKeyPool(keys, os.Getenv("XKIRO_MODEL"))
-		if pool, ok := analyzer.(*XKiroKeyPool); ok {
-			defaultConcurrency = pool.KeyCount()
+		if _, ok := analyzer.(*XKiroKeyPool); ok {
+			defaultConcurrency = 64
 		}
 	case "cloudflare-thaillm", "cloudflare/thaillm":
 		accounts, accountErr := cloudflareAccountsFromEnv()
@@ -38,6 +38,25 @@ func NewAnalyzerFromEnv() (Analyzer, int, error) {
 	}
 	if err != nil {
 		return nil, 0, err
+	}
+	fallbackURL, fallbackConfigured := os.LookupEnv("PHOTOKEEP_GATEWAY_FALLBACK_URL")
+	fallbackURL = strings.TrimSpace(fallbackURL)
+	if !fallbackConfigured && provider == "xkiro" {
+		fallbackURL = defaultVisionAnalyzeURL
+	}
+	if strings.EqualFold(fallbackURL, "off") {
+		fallbackURL = ""
+	}
+	if fallbackURL != "" {
+		fallback, fallbackErr := NewRemoteVisionAnalyzer(
+			fallbackURL,
+			os.Getenv("PHOTOKEEP_GATEWAY_FALLBACK_API_KEY"),
+			os.Getenv("PHOTOKEEP_GATEWAY_FALLBACK_API_KEY_HEADER"),
+		)
+		if fallbackErr != nil {
+			return nil, 0, fallbackErr
+		}
+		analyzer = NewRateLimitFailoverAnalyzer(analyzer, fallback)
 	}
 	if defaultConcurrency < 1 {
 		defaultConcurrency = 1

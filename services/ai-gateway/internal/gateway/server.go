@@ -30,16 +30,17 @@ type Analyzer interface {
 }
 
 type Server struct {
-	analyzer Analyzer
-	token    string
-	slots    chan struct{}
+	analyzer    Analyzer
+	token       string
+	concurrency int
+	slots       chan struct{}
 }
 
 func New(analyzer Analyzer, token string, concurrency int) *Server {
 	if concurrency < 1 {
 		concurrency = 1
 	}
-	return &Server{analyzer: analyzer, token: strings.TrimSpace(token), slots: make(chan struct{}, concurrency)}
+	return &Server{analyzer: analyzer, token: strings.TrimSpace(token), concurrency: concurrency, slots: make(chan struct{}, concurrency)}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -56,7 +57,7 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		respond(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "AI ยังไม่พร้อม"})
 		return
 	}
-	respond(w, http.StatusOK, map[string]any{"success": true, "status": "ok"})
+	respond(w, http.StatusOK, map[string]any{"success": true, "status": "ok", "concurrency": s.concurrency})
 }
 
 func (s *Server) analyze(w http.ResponseWriter, r *http.Request) {

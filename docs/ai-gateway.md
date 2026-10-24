@@ -37,3 +37,14 @@ deployment, but do not embed that shared secret in public desktop binaries.
 
 Provider keys are read at server startup. Change them in the server environment
 and restart the gateway to rotate keys. No desktop reinstall is needed.
+
+For xKiro, the gateway uses `https://vision.k1god.com/v1/analyze` as a
+temporary fallback by default. When xKiro returns HTTP 429, the gateway sends
+new images to that endpoint until the provider's `Retry-After` cooldown ends,
+then sends one probe request to xKiro before returning to normal traffic. Set
+`PHOTOKEEP_GATEWAY_FALLBACK_URL` to another compatible endpoint, or set it to
+`off` to disable the fallback. If the fallback requires an API key, set
+`PHOTOKEEP_GATEWAY_FALLBACK_API_KEY`; the header defaults to `x-api-key`.
+`PHOTOKEEP_GATEWAY_CONCURRENCY=64` makes the local gateway advertise and accept
+up to 64 simultaneous analysis requests. The provider's own limits still apply,
+so concurrency does not guarantee a proportional speed increase.
