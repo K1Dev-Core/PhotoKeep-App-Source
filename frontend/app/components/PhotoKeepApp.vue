@@ -338,7 +338,7 @@ async function seekPhotos(offset: number) {
 }
 
 let timer: ReturnType<typeof setTimeout>
-watch(query, () => { clearTimeout(timer); searchSeq++; photos.value = []; searchTotal.value = 0; loadingMore.value = false; loadingPrevious.value = false; searching.value = true; timer = setTimeout(search, 220) })
+watch(query, () => { clearTimeout(timer); searchSeq++; photos.value = []; searchTotal.value = 0; loadingMore.value = false; loadingPrevious.value = false; searching.value = true; timer = setTimeout(search, 350) })
 
 async function pick(which: 'source' | 'dest') {
   const path = await run<string>(() => api().PickDirectory(), 'pick')
