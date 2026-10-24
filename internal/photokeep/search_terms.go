@@ -75,6 +75,40 @@ func searchTagSet(tags string) map[string]bool {
 	return words
 }
 
+func searchTermMatches(words map[string]bool, query string) bool {
+	if words[query] {
+		return true
+	}
+	if !isLongThaiSearchTerm(query) {
+		return false
+	}
+	for word := range words {
+		if strings.Contains(word, query) {
+			return true
+		}
+	}
+	return false
+}
+
+func isLongThaiSearchTerm(query string) bool {
+	letters, hasThai := 0, false
+	for _, r := range query {
+		if unicode.IsMark(r) {
+			continue
+		}
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
+			continue
+		}
+		letters++
+		if unicode.In(r, unicode.Scripts["Thai"]) {
+			hasThai = true
+		} else {
+			return false
+		}
+	}
+	return hasThai && letters >= 3
+}
+
 func searchRank(photo Photo, groups [][]string, query string) (float64, int) {
 	filename := searchWordSet(photo.Filename)
 	description := searchWordSet(photo.Description)
@@ -88,13 +122,13 @@ func searchRank(photo Photo, groups [][]string, query string) (float64, int) {
 				weight = 0.75
 			}
 			candidate := 0.0
-			if tags[word] {
+			if searchTermMatches(tags, word) {
 				candidate += 5
 			}
-			if filename[word] {
+			if searchTermMatches(filename, word) {
 				candidate += 3
 			}
-			if description[word] {
+			if searchTermMatches(description, word) {
 				candidate += 2
 			}
 			if candidate*weight > best {
