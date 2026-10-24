@@ -1,20 +1,19 @@
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { z } from 'zod'
 import { importedThemeSchema, type ImportedTheme } from '../utils/openvsx-theme'
 
 export function usePhotoKeepTheme(notify: (message: string) => void) {
-type ThemePreference = 'system' | 'imported'
+type ThemePreference = 'light' | 'imported'
 const THEME_STORAGE_KEY = 'photokeep.theme'
 const IMPORTED_THEMES_STORAGE_KEY = 'photokeep.imported-themes.v1'
 const SELECTED_IMPORTED_THEME_STORAGE_KEY = 'photokeep.imported-theme.selected'
-const themePreference = ref<ThemePreference>('system')
+const themePreference = ref<ThemePreference>('light')
 const importedThemes = ref<ImportedTheme[]>([])
 const selectedImportedThemeId = ref('')
-let systemThemeQuery: MediaQueryList | undefined
 function applyTheme() {
   if (typeof document === 'undefined') return
   const selected = themePreference.value === 'imported' ? importedThemes.value.find(theme => theme.id === selectedImportedThemeId.value) : undefined
-  const dark = selected?.dark ?? !!systemThemeQuery?.matches
+  const dark = selected?.dark ?? false
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
   if (selected) {
     document.documentElement.dataset.importedTheme = 'true'
@@ -72,7 +71,7 @@ function removeTheme(id: string) {
   importedThemes.value = importedThemes.value.filter(theme => theme.id !== id)
   if (selectedImportedThemeId.value === id) {
     selectedImportedThemeId.value = ''
-    themePreference.value = 'system'
+    themePreference.value = 'light'
   }
   applyTheme()
 }
@@ -82,12 +81,10 @@ onMounted(() => {
     if (storedThemes.success) importedThemes.value = storedThemes.data
     selectedImportedThemeId.value = localStorage.getItem(SELECTED_IMPORTED_THEME_STORAGE_KEY) || ''
     const saved = localStorage.getItem(THEME_STORAGE_KEY)
-    if (saved === 'system' || (saved === 'imported' && importedThemes.value.some(theme => theme.id === selectedImportedThemeId.value))) themePreference.value = saved
+    if (saved === 'system' || saved === 'light') themePreference.value = 'light'
+    else if (saved === 'imported' && importedThemes.value.some(theme => theme.id === selectedImportedThemeId.value)) themePreference.value = saved
   } catch {}
-  systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  systemThemeQuery.addEventListener('change', applyTheme)
   applyTheme()
 })
-onBeforeUnmount(() => systemThemeQuery?.removeEventListener('change', applyTheme))
 return { themePreference, importedThemes, selectedImportedThemeId, importTheme, selectTheme, removeTheme }
 }

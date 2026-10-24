@@ -18,7 +18,7 @@ const source = defineModel<string>("source", { required: true });
 const dest = defineModel<string>("dest", { required: true });
 const keepOriginal = defineModel<boolean>("keepOriginal", { required: true });
 const gatewayUrl = defineModel<string>("gatewayUrl", { required: true });
-const themePreference = defineModel<"system" | "imported">("themePreference", {
+const themePreference = defineModel<"light" | "imported">("themePreference", {
     required: true,
 });
 type SettingsCategory = "appearance" | "folders" | "library" | "ai";
@@ -65,15 +65,15 @@ const emit = defineEmits<{
                 class="appearance-settings"
                 aria-labelledby="appearance-settings-title"
             >
-                <div><h2 id="appearance-settings-title">สีตามระบบ</h2></div>
+                <div><h2 id="appearance-settings-title">สีสว่าง</h2></div>
                 <button
                     type="button"
                     class="system-theme-option"
-                    :aria-pressed="themePreference === 'system'"
-                    :class="{ active: themePreference === 'system' }"
-                    @click="themePreference = 'system'"
+                    :aria-pressed="themePreference === 'light'"
+                    :class="{ active: themePreference === 'light' }"
+                    @click="themePreference = 'light'"
                 >
-                    <Monitor :size="15" /> ใช้สีตามระบบ
+                    <Monitor :size="15" /> ใช้สีสว่าง
                 </button>
             </section>
             <OpenVSXThemePanel
