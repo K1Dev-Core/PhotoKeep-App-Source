@@ -311,7 +311,7 @@ func combineSearchResults(query string, lexical photokeep.SearchResult, semantic
 	for rank, photo := range lexical.Photos {
 		current, exists := hits[photo.ID]
 		if !exists {
-			if len(semanticHits) > 0 && !strings.Contains(strings.ToLower(photo.Filename), query) {
+			if len(semanticHits) > 0 && !photoContainsSearchPhrase(photo, query) {
 				continue
 			}
 			current.photo = photo
@@ -344,6 +344,15 @@ func combineSearchResults(query string, lexical photokeep.SearchResult, semantic
 	lexical.Photos = photos
 	lexical.Total = int64(len(ordered))
 	return lexical
+}
+
+func photoContainsSearchPhrase(photo photokeep.Photo, query string) bool {
+	if query == "" {
+		return false
+	}
+	return strings.Contains(strings.ToLower(photo.Filename), query) ||
+		strings.Contains(strings.ToLower(photo.Description), query) ||
+		strings.Contains(strings.ToLower(photo.Tags), query)
 }
 
 func pageSearchResult(result photokeep.SearchResult, offset, limit int) photokeep.SearchResult {
