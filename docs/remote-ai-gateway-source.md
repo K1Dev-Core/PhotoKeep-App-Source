@@ -27,12 +27,10 @@ This server calls hosted AI APIs and does not download a model or require a GPU.
 For xKiro, set `XKIRO_API_KEYS=key1,key2,...`. For Cloudflare/ThaiLLM, set
 `CLOUDFLARE_ACCOUNTS=account1:token1,account2:token2,...` and
 `THAILLM_API_KEYS=key1,key2,...`. The gateway round-robins image requests
-across configured keys. Its default xKiro concurrency is 64;
-`PHOTOKEEP_GATEWAY_CONCURRENCY` can override it from 1 to 128. When xKiro
-returns an IP-scoped 429, the gateway stops retrying other keys and sends new
-images to `https://vision.k1god.com/v1/analyze` until `Retry-After` expires,
-then probes xKiro once. Set `PHOTOKEEP_GATEWAY_FALLBACK_URL=off` to disable
-this fallback. Keys sharing one provider quota still share that quota.
+across configured keys and immediately tries another key on rate limits or
+authentication failures. Its default request concurrency scales with the
+configured pools (up to 128); `PHOTOKEEP_GATEWAY_CONCURRENCY` can override it.
+Keys sharing one provider quota still share that quota.
 
 The gateway exposes `GET /health` and `POST /v1/analyze` with one multipart
 `file` field. To connect PhotoKeep over an SSH tunnel or private HTTPS, follow

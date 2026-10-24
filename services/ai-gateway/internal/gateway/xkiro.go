@@ -89,9 +89,6 @@ func (p *XKiroKeyPool) Analyze(ctx context.Context, path string) (photokeep.Imag
 			if httpErr.RetryAfter > longestRetry {
 				longestRetry = httpErr.RetryAfter
 			}
-			if httpErr.StatusCode == http.StatusTooManyRequests && xkiroIPScopedRateLimit(httpErr.Message) {
-				return photokeep.ImageAIResult{}, err
-			}
 			if httpErr.StatusCode != http.StatusTooManyRequests && httpErr.StatusCode != http.StatusUnauthorized && httpErr.StatusCode != http.StatusForbidden && httpErr.StatusCode < 500 {
 				return photokeep.ImageAIResult{}, err
 			}
@@ -110,12 +107,6 @@ func (p *XKiroKeyPool) Analyze(ctx context.Context, path string) (photokeep.Imag
 		last = &copyErr
 	}
 	return photokeep.ImageAIResult{}, last
-}
-
-func xkiroIPScopedRateLimit(message string) bool {
-	message = strings.ToLower(message)
-	return strings.Contains(message, "ip, min") || strings.Contains(message, "ip/min") ||
-		strings.Contains(message, "per ip") || strings.Contains(message, "ip limit")
 }
 
 func NewXKiroAnalyzer(key, model string) (*XKiroAnalyzer, error) {
@@ -229,13 +220,6 @@ func (c *XKiroAnalyzer) Analyze(ctx context.Context, path string) (photokeep.Ima
 		}
 		return photokeep.ImageAIResult{}, &photokeep.ImageAIHTTPError{StatusCode: resp.StatusCode, Message: message, RetryAfter: retryAfter}
 	}
-	if rateErr := xkiroRateLimitInBody(body, resp.Header.Get("Retry-After")); rateErr != nil {
-		var httpErr *photokeep.ImageAIHTTPError
-		if errors.As(rateErr, &httpErr) {
-			c.pauseAfterRateLimit(httpErr.RetryAfter)
-		}
-		return photokeep.ImageAIResult{}, rateErr
-	}
 	var response struct {
 		Model   string `json:"model"`
 		Choices []struct {
@@ -267,33 +251,6 @@ func (c *XKiroAnalyzer) Analyze(ctx context.Context, path string) (photokeep.Ima
 		result.Model = response.Model
 	}
 	return result, nil
-}
-
-func xkiroRateLimitInBody(body []byte, retryAfterHeader string) error {
-	text := string(body)
-	lower := strings.ToLower(text)
-	if !strings.Contains(lower, "rate limit") && !strings.Contains(lower, "too many requests") {
-		return nil
-	}
-	message := strings.TrimSpace(text)
-	if len(message) > 280 {
-		message = message[:280]
-	}
-	delay := xkiroRetryAfter(retryAfterHeader)
-	if delay == 0 {
-		lowerIndex := strings.Index(lower, "retry after")
-		if lowerIndex >= 0 {
-			remaining := strings.Fields(strings.TrimLeft(strings.TrimSpace(text[lowerIndex+len("retry after"):]), ": ="))
-			if len(remaining) > 0 {
-				if parsed, err := time.ParseDuration(strings.TrimRight(remaining[0], ".,;")); err == nil && parsed > 0 {
-					delay = parsed
-				} else if seconds, parseErr := strconv.Atoi(strings.TrimRight(remaining[0], ".,;sS")); parseErr == nil && seconds > 0 {
-					delay = time.Duration(seconds) * time.Second
-				}
-			}
-		}
-	}
-	return &photokeep.ImageAIHTTPError{StatusCode: http.StatusTooManyRequests, Message: message, RetryAfter: delay}
 }
 
 func (c *XKiroAnalyzer) waitForRequestSlot(ctx context.Context) error {
